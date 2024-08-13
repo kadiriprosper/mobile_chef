@@ -1,0 +1,43 @@
+name: recipe_on_net
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.4.4 <4.0.0'
+
+dependencies:
+  cloud_firestore: ^4.14.0
+  firebase_auth: ^4.16.0
+  firebase_core: ^2.24.2
+  firebase_storage: ^11.6.0
+  flutter:
+    sdk: flutter
+  flutter_spinkit: ^5.2.1
+  flutter_svg: ^2.0.10+1
+  get: ^4.6.6
+  google_fonts: ^6.2.1
+  hive_flutter: ^1.1.0
+  http: ^1.2.2
+  intl: ^0.19.0
+  svg_flutter: ^0.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: Klasik
+      fonts:
+        - asset: assets/fonts/Klasik-Regular.otf
+        - asset: assets/fonts/Klasik-Rough.otf
+        - asset: assets/fonts/Klasik-Shadow.otf
+
+  assets:
+    - assets/
+    - assets/logo/
+    - assets/illustrations/
