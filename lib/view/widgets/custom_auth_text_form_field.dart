@@ -32,7 +32,7 @@ class CustomAuthTextFormField extends StatelessWidget {
       validator: (value) => validator(value),
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.all(18),
-        filled: filled,
+        filled: true,
         fillColor: filled ? const Color(0xFFFFF6ED) : Colors.white,
         hintText: hintText,
         hintStyle: TextStyle(
@@ -41,16 +41,16 @@ class CustomAuthTextFormField extends StatelessWidget {
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(
             color: Colors.orange,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(
             color: Colors.orange,
           ),

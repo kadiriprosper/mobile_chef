@@ -15,7 +15,7 @@ class CustomAuthButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
-      onPressed: () {},
+      onPressed: onTap,
       color: filled ? Colors.orange.shade500 : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
