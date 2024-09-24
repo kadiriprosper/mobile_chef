@@ -31,7 +31,7 @@ class CustomAuthButton extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 18,
+          fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
       ),

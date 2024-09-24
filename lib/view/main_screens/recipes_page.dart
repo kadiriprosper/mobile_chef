@@ -87,8 +87,10 @@ class _RecipesPageState extends State<RecipesPage> {
                       ...List.generate(
                         (resultsCount / 2).floor(),
                         (index) => Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: CustomRecipeCard(),
+                          padding: const EdgeInsets.only(bottom: 20, right: 6),
+                          child: CustomRecipeCard(
+                            addMargin: false,
+                          ),
                         ),
                       ),
                     ],
@@ -101,8 +103,10 @@ class _RecipesPageState extends State<RecipesPage> {
                       ...List.generate(
                         (resultsCount / 2).ceil(),
                         (index) => Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: CustomRecipeCard(),
+                          padding: const EdgeInsets.only(bottom: 20, left: 6),
+                          child: CustomRecipeCard(
+                            addMargin: false,
+                          ),
                         ),
                       ),
                       const Text(

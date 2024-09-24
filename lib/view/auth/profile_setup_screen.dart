@@ -1,8 +1,7 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:recipe_on_net/view/main_screens/main_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
 
@@ -50,62 +49,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(500).copyWith(
-                    bottomRight: const Radius.circular(100),
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      spreadRadius: 8,
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(4),
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 200,
-                      height: 200,
-                      margin: const EdgeInsets.all(15),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.green,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            spreadRadius: 8,
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: SvgPicture.asset(
-                          'assets/illustrations/food_bg_1.svg',
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: IconButton.filled(
-                        onPressed: () {
-                          //TODO: Oppen image selection file
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(
-                            Colors.orange.shade700,
-                          ),
-                        ),
-                        iconSize: 24,
-                        icon: const Icon(Icons.mode_edit_outline_outlined),
-                      ),
-                    ),
-                  ],
-                ),
+              ProfileImageCircle(
+                isEditable: true,
               ),
               const SizedBox(height: 20),
               Column(
@@ -137,13 +82,92 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               ),
               const SizedBox(height: 50),
               CustomAuthButton(
-                onTap: () {},
+                onTap: () {
+                  Get.offUntil(
+                    MaterialPageRoute(builder: (context) => const MainScreen()),
+                    (route) => false,
+                  );
+                },
                 label: 'Continue',
                 filled: true,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class ProfileImageCircle extends StatelessWidget {
+  const ProfileImageCircle({
+    super.key,
+    required this.isEditable,
+  });
+
+  final bool isEditable;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(500).copyWith(
+          bottomRight: isEditable
+              ? const Radius.circular(100)
+              : const Radius.circular(500),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            spreadRadius: 8,
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Stack(
+        children: [
+          Container(
+            width: 200,
+            height: 200,
+            margin: const EdgeInsets.all(15),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.green,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  spreadRadius: 8,
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: SvgPicture.asset(
+                'assets/illustrations/food_bg_1.svg',
+              ),
+            ),
+          ),
+          isEditable
+              ? Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: IconButton.filled(
+                    onPressed: () {
+                      //TODO: Oppen image selection file
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(
+                        Colors.orange.shade700,
+                      ),
+                    ),
+                    iconSize: 24,
+                    icon: const Icon(Icons.mode_edit_outline_outlined),
+                  ),
+                )
+              : const SizedBox(),
+        ],
       ),
     );
   }

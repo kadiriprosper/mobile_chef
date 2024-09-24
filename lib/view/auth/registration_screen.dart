@@ -33,7 +33,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   );
   TextEditingController confirmPasswordController = Get.put(
     TextEditingController(),
-    tag: 'RegistrationPassword',
+    tag: 'RegistrationConfirmPassword',
   );
 
   TapGestureRecognizer onTapLogin = Get.put(
@@ -178,8 +178,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 filled: true,
                 label: 'Create Account',
                 onTap: () {
-                  // formKey.currentState!.validate()
-                  if (true) {
+                  if (formKey.currentState?.validate() == true) {
                     //TODO: Perform login
                     Get.off(() => const ProfileSetupScreen());
                   }

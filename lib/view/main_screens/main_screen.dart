@@ -28,6 +28,7 @@ class _MainScreenState extends State<MainScreen> {
       body: pages[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         currentIndex: currentIndex,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,

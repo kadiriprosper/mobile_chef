@@ -36,7 +36,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -59,57 +58,70 @@ class _LoginScreenState extends State<LoginScreen> {
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 30),
-            CustomAuthTextFormField(
-              controller: emailController,
-              hintText: 'E-mail',
-              prefixIcon: Icon(
-                Icons.alternate_email_outlined,
-                color: Colors.orange.shade600,
-              ),
-              textInputType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value != null && value.isEmail) {
-                  return null;
-                }
-                return 'Enter valid email';
-              },
-            ),
-            const SizedBox(height: 8),
-            CustomAuthTextFormField(
-              hintText: 'Password',
-              controller: passwordController,
-              prefixIcon: Icon(
-                Icons.lock_open_outlined,
-                color: Colors.orange.shade600,
-              ),
-              validator: (value) {
-                if (value != null) {
-                  if (value.length >= 8) {
-                    return null;
-                  }
-                  return 'Password length cannot be less than 8';
-                }
-                return 'Please input a valid password';
-              },
-              textInputType: TextInputType.visiblePassword,
-              obscureText: obscureText,
-              suffixIcon: IconButton(
-                onPressed: () {
-                  setState(() {
-                    obscureText = !obscureText;
-                  });
-                },
-                icon: obscureText
-                    ? const Icon(Icons.visibility_outlined)
-                    : const Icon(Icons.visibility_off_outlined),
-                color: Colors.black54,
+            Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  CustomAuthTextFormField(
+                    filled: false,
+                    controller: emailController,
+                    hintText: 'E-mail',
+                    prefixIcon: Icon(
+                      Icons.alternate_email_outlined,
+                      color: Colors.orange.shade600,
+                    ),
+                    textInputType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value != null && value.isEmail) {
+                        return null;
+                      }
+                      return 'Enter valid email';
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomAuthTextFormField(
+                    filled: false,
+                    hintText: 'Password',
+                    controller: passwordController,
+                    prefixIcon: Icon(
+                      Icons.lock_open_outlined,
+                      color: Colors.orange.shade600,
+                    ),
+                    validator: (value) {
+                      if (value != null) {
+                        if (value.length >= 8) {
+                          return null;
+                        }
+                        return 'Password length cannot be less than 8';
+                      }
+                      return 'Please input a valid password';
+                    },
+                    textInputType: TextInputType.visiblePassword,
+                    obscureText: obscureText,
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          obscureText = !obscureText;
+                        });
+                      },
+                      icon: obscureText
+                          ? const Icon(Icons.visibility_outlined)
+                          : const Icon(Icons.visibility_off_outlined),
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 30),
             CustomAuthButton(
               filled: true,
               label: 'Login',
-              onTap: () {},
+              onTap: () {
+                if (formKey.currentState?.validate() == true) {
+                  //TODO: Login User
+                }
+              },
             ),
             const SizedBox(height: 14),
             Align(
@@ -151,24 +163,27 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             SizedBox(
               width: 600,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: CustomExternalAuthButton(
-                      buttonLabel: 'Google',
-                      icon: const Icon(Icons.dashboard_customize),
-                      onPressed: () {},
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CustomExternalAuthButton(
+                        buttonLabel: 'Google',
+                        icon: const Icon(Icons.dashboard_customize),
+                        onPressed: () {},
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: CustomExternalAuthButton(
-                      buttonLabel: 'Facebook',
-                      icon: const Icon(Icons.dashboard_customize),
-                      onPressed: () {},
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: CustomExternalAuthButton(
+                        buttonLabel: 'Facebook',
+                        icon: const Icon(Icons.dashboard_customize),
+                        onPressed: () {},
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 30),

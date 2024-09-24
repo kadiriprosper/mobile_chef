@@ -11,7 +11,6 @@ enum DashboardSectionCategoryEnum {
   seafood,
 }
 
-
 const timeOfDayEmoji = [
   '🔆',
   '☀️',
@@ -33,9 +32,9 @@ String emojiTimeOfDay() {
     return timeOfDayEmoji[0];
   } else if (TimeOfDay.now().hour > 5 && TimeOfDay.now().hour < 12) {
     return timeOfDayEmoji[1];
-  } else if (TimeOfDay.now().hour >= 12 && TimeOfDay.now().hour < 5) {
+  } else if (TimeOfDay.now().hour >= 12 && TimeOfDay.now().hour < 17) {
     return timeOfDayEmoji[2];
-  } else if (TimeOfDay.now().hour >= 5 && TimeOfDay.now().hour < 8) {
+  } else if (TimeOfDay.now().hour >= 17 && TimeOfDay.now().hour < 20) {
     return timeOfDayEmoji[3];
   } else {
     return timeOfDayEmoji[4];
@@ -48,7 +47,6 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(12),
@@ -149,81 +147,7 @@ class DashboardPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {
-                  //TODO: Go to recipe details screen
-                },
-                child: Container(
-                  height: 200,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.grey,
-                        blurRadius: 5,
-                        offset: Offset(3, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        height: 200,
-                        width: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(12).copyWith(
-                            topRight: Radius.zero,
-                            bottomRight: Radius.zero,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 10),
-                              Text(
-                                'American Dish',
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const Spacer(),
-                              Text(
-                                'Lorem Ispum Food Pasta and Egg Dish and fish stain',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Lorem Ispum Food Pasta and Egg Dish and fish stain',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              LargeRecipeCard(),
               const SizedBox(height: 24),
               DashboardSectionWidget(
                 onPressed: () {},
@@ -245,6 +169,91 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(height: 24),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class LargeRecipeCard extends StatelessWidget {
+  const LargeRecipeCard({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        //TODO: Go to recipe details screen
+      },
+      child: Container(
+        height: 200,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 5,
+              offset: Offset(3, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              height: 200,
+              width: 200,
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(12).copyWith(
+                  topRight: Radius.zero,
+                  bottomRight: Radius.zero,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    Text(
+                      'American Dish',
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'Lorem Ispum Food Pasta and Egg Dish and fish stain',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Lorem Ispum Food Pasta and Egg Dish and fish stain',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -311,14 +320,19 @@ class DashboardSectionWidget extends StatelessWidget {
 class CustomRecipeCard extends StatelessWidget {
   const CustomRecipeCard({
     super.key,
+    this.addMargin,
   });
+
+  final bool? addMargin;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 330,
       width: 230,
-      margin: const EdgeInsets.all(5).copyWith(right: 15),
+      margin: addMargin == false
+          ? null
+          : const EdgeInsets.all(5).copyWith(right: 15),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,

@@ -25,34 +25,7 @@ class _SearchScreenState extends State<SearchScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Transform.rotate(
-              angle: (45 * pi) / 180,
-              child: InkWell(
-                onTap: () {
-                  Get.back();
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 6,
-                      )
-                    ],
-                  ),
-                  child: Transform.rotate(
-                    angle: -(45 * pi) / 180,
-                    child: const Icon(
-                      Icons.arrow_back_ios_rounded,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            CustomBackButton(),
             const Text(
               'Search Recipes',
               style: TextStyle(
@@ -110,23 +83,29 @@ class _SearchScreenState extends State<SearchScreen> {
                             ...List.generate(
                               (resultsCount / 2).floor(),
                               (index) => Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: CustomRecipeCard(),
+                                padding:
+                                    const EdgeInsets.only(bottom: 20, right: 6),
+                                child: CustomRecipeCard(
+                                  addMargin: false,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
                       //TODO: Column right
-                      const SizedBox(width: 15),
+
                       Expanded(
                         child: Column(
                           children: [
                             ...List.generate(
                               (resultsCount / 2).ceil(),
                               (index) => Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: CustomRecipeCard(),
+                                padding:
+                                    const EdgeInsets.only(bottom: 20, left: 6),
+                                child: CustomRecipeCard(
+                                  addMargin: false,
+                                ),
                               ),
                             ),
                           ],
@@ -137,6 +116,44 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               )
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CustomBackButton extends StatelessWidget {
+  const CustomBackButton({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: (45 * pi) / 180,
+      child: InkWell(
+        onTap: () {
+          Get.back();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 6,
+              )
+            ],
+          ),
+          child: Transform.rotate(
+            angle: -(45 * pi) / 180,
+            child: const Icon(
+              Icons.arrow_back_ios_rounded,
+              color: Colors.black,
+            ),
           ),
         ),
       ),
