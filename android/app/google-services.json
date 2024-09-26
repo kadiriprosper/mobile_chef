@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "392581030434",
+    "project_id": "mobile-chef-collab",
+    "storage_bucket": "mobile-chef-collab.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392581030434:android:a0935508d4902d6840207b",
+        "android_client_info": {
+          "package_name": "com.mobilekitchen.mobilechef"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "392581030434-ncuti5989p059uoqvmr6d8n8jq1bh10f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD41A7ID-_6xQndSd0_LE9Ytiy7l-L24pE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "392581030434-ncuti5989p059uoqvmr6d8n8jq1bh10f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

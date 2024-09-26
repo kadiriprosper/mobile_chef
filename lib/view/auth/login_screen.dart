@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:recipe_on_net/view/auth/forgotten_password_screen.dart';
 import 'package:recipe_on_net/view/auth/registration_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
@@ -127,7 +128,9 @@ class _LoginScreenState extends State<LoginScreen> {
             Align(
               alignment: Alignment.bottomRight,
               child: InkWell(
-                onTap: () {},
+                onTap: () {
+                  Get.to(() => const ForgottenPasswordScreen());
+                },
                 borderRadius: BorderRadius.circular(8),
                 splashColor: Colors.orangeAccent.shade200,
                 splashFactory: InkSparkle.splashFactory,
