@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:recipe_on_net/controller/global_controller.dart';
 import 'package:recipe_on_net/view/main_screens/ai_chef_page.dart';
 import 'package:recipe_on_net/view/main_screens/cart_page.dart';
 import 'package:recipe_on_net/view/main_screens/dashboard_page.dart';
@@ -14,6 +16,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  GlobalController globalController = Get.put(GlobalController());
   final pages = const [
     DashboardPage(),
     RecipesPage(),
@@ -21,20 +24,19 @@ class _MainScreenState extends State<MainScreen> {
     CartPage(),
     ProfilePage(),
   ];
-  int currentIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: pages[currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      body: Obx(() => pages[globalController.currentIndex.value]),
+      bottomNavigationBar:Obx(() =>  BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        currentIndex: currentIndex,
+        currentIndex: globalController.currentIndex.value,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
         onTap: (value) {
           setState(() {
-            currentIndex = value;
+            globalController.currentIndex.value = value;
           });
         },
         items: const [
@@ -64,6 +66,6 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-    );
+    ),);
   }
 }

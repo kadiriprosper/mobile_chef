@@ -1,21 +1,25 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:recipe_on_net/view/auth/forgotten_password_screen.dart';
-import 'package:recipe_on_net/view/auth/login_screen.dart';
-import 'package:recipe_on_net/view/auth/profile_setup_screen.dart';
-import 'package:recipe_on_net/view/main_screens/main_screen.dart';
-import 'package:recipe_on_net/view/search_screen.dart';
+import 'package:recipe_on_net/firebase_options.dart';
+import 'package:recipe_on_net/view/chat_pages/chat_screen.dart';
+import 'package:recipe_on_net/view/networt_error_page.dart';
 import 'package:recipe_on_net/view/splash_screen.dart';
+
+const geminAPIToken = String.fromEnvironment("gemini_api_key");
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Gemini.init(apiKey: geminAPIToken);
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-  await Firebase.initializeApp();
+  // await Get.put(RecipeController()).getRandomMeal();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MainApp());
 }
 
@@ -28,7 +32,9 @@ class MainApp extends StatelessWidget {
       theme: ThemeData.light().copyWith(
         scaffoldBackgroundColor: const Color(0xFFFFF3E9),
       ),
-      home: const SplashScreen(),
+      home: const Scaffold(
+        body: SplashScreen(),
+      ),
     );
   }
 }

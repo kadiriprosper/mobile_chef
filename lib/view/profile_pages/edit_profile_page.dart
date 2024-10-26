@@ -1,5 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:recipe_on_net/controller/storage_controller.dart';
+import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/auth/profile_setup_screen.dart';
 import 'package:recipe_on_net/view/main_screens/profile_page.dart';
 import 'package:recipe_on_net/view/profile_pages/change_password_screen.dart';
@@ -15,35 +22,36 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  File? profilePic;
+  final formKey = GlobalKey<FormState>();
+
+  TextEditingController usernameController = Get.put(
+    TextEditingController(),
+    tag: 'EditProfileUsername',
+  );
+
+  // TextEditingController emailController = Get.put(
+  //   TextEditingController(),
+  //   tag: 'EditProfileEmail',
+  // );
   @override
   Widget build(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    TextEditingController usernameController = Get.put(
-      TextEditingController(),
-      tag: 'EditProfileUsername',
-    );
-
-    TextEditingController emailController = Get.put(
-      TextEditingController(),
-      tag: 'EditProfileEmail',
-    );
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         toolbarHeight: 70,
-        title: Row(
+        title: const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             CustomBackButton(),
-            const Text(
+            Text(
               'Edit Profile',
               style: TextStyle(
                 fontSize: 20,
               ),
             ),
-            const SizedBox(
+            SizedBox(
               width: 30,
             ),
           ],
@@ -55,6 +63,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
           children: [
             ProfileImageCircle(
               isEditable: true,
+              imagePath: profilePic?.path,
+              onPressed: () async {
+                ImagePicker imagePicker = ImagePicker();
+                final tempFile = await imagePicker.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (tempFile != null) {
+                  setState(() {
+                    profilePic = File(tempFile.path);
+                  });
+                }
+              },
             ),
             const SizedBox(height: 40),
             Form(
@@ -77,23 +97,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     filled: false,
                     textInputType: TextInputType.text,
                   ),
-                  const SizedBox(height: 16),
-                  CustomAuthTextFormField(
-                    hintText: 'E-mail',
-                    controller: emailController,
-                    prefixIcon: Icon(
-                      Icons.alternate_email_outlined,
-                      color: Colors.orange.shade600,
-                    ),
-                    validator: (value) {
-                      if (value != null && value.isEmail) {
-                        return null;
-                      }
-                      return 'E-mail not valid';
-                    },
-                    filled: false,
-                    textInputType: TextInputType.text,
-                  ),
+                  // const SizedBox(height: 16),
+                  // CustomAuthTextFormField(
+                  //   hintText: 'E-mail',
+                  //   controller: emailController,
+                  //   prefixIcon: Icon(
+                  //     Icons.alternate_email_outlined,
+                  //     color: Colors.orange.shade600,
+                  //   ),
+                  //   validator: (value) {
+                  //     if (value != null && value.isEmail) {
+                  //       return null;
+                  //     }
+                  //     return 'E-mail not valid';
+                  //   },
+                  //   filled: false,
+                  //   textInputType: TextInputType.text,
+                  // ),
                 ],
               ),
             ),
@@ -111,7 +131,46 @@ class _EditProfilePageState extends State<EditProfilePage> {
               onTap: () async {
                 if (formKey.currentState?.validate() == true) {
                   //TODO: Save the user details
-                  //TODO: GO BACK
+                  UserController userController = Get.put(UserController());
+                  StorageController storageController = Get.put(
+                    StorageController(),
+                  );
+
+                  userController.setUserName(usernameController.text);
+
+                  final response = await Get.showOverlay(
+                    asyncFunction: () async {
+                      if (profilePic != null) {
+                        final profileImgUrl =
+                            await storageController.storeProfilePic(
+                          profilePic!,
+                          userController.userModel.value.email,
+                        );
+                        if (profileImgUrl != 'Error Setting profile pic') {
+                          userController.setProfilePic(profileImgUrl);
+                        }
+                        // userController.setProfilePic(
+                        //   await storageController.storeProfilePic(
+                        //     profilePic!,
+                        //     userController.userModel.value.email,
+                        //   ),
+                        // );
+                      }
+                      return await storageController.storeUserData(
+                        userController.userModel.value,
+                      );
+                    },
+                    loadingWidget: const SpinKitFadingCube(
+                      color: Colors.brown,
+                      size: 20,
+                    ),
+                  );
+                  if (response == null) {
+                    userController.updateSuccess = true;
+                  } else {
+                    userController.updateSuccess = false;
+                  }
+                  Get.back();
                 }
               },
               label: 'Save Details',

@@ -1,6 +1,14 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:recipe_on_net/controller/recipe_controller.dart';
+import 'package:recipe_on_net/controller/storage_controller.dart';
+import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/main_screens/main_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
@@ -13,6 +21,7 @@ class ProfileSetupScreen extends StatefulWidget {
 }
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
+  File? profilePic;
   TextEditingController usernameController = Get.put(
     TextEditingController(),
     tag: 'profScrUsername',
@@ -51,6 +60,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               const SizedBox(height: 20),
               ProfileImageCircle(
                 isEditable: true,
+                imagePath: profilePic?.path,
+                onPressed: () async {
+                  ImagePicker imagePicker = ImagePicker();
+                  final tempFile = await imagePicker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  if (tempFile != null) {
+                    setState(() {
+                      profilePic = File(tempFile.path);
+                    });
+                  }
+                },
               ),
               const SizedBox(height: 20),
               Column(
@@ -82,11 +103,44 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               ),
               const SizedBox(height: 50),
               CustomAuthButton(
-                onTap: () {
-                  Get.offUntil(
-                    MaterialPageRoute(builder: (context) => const MainScreen()),
-                    (route) => false,
-                  );
+                onTap: () async {
+                  if (usernameController.text.length >= 3) {
+                    UserController userController = Get.put(UserController());
+                    StorageController storageController =
+                        Get.put(StorageController());
+                    userController.setUserName(usernameController.text);
+                    if (profilePic != null) {
+                      final profileImgUrl =
+                          await storageController.storeProfilePic(
+                        profilePic!,
+                        userController.userModel.value.email,
+                      );
+                      if (profileImgUrl != 'Error Setting profile pic') {
+                        userController.setProfilePic(profileImgUrl);
+                      }
+                    }
+                    final response = await storageController.storeUserData(
+                      userController.userModel.value,
+                    );
+                    if (response == null) {
+                      RecipeController recipeController =
+                          Get.put(RecipeController(), permanent: true);
+                      await recipeController.getRandomMeal();
+                      Get.offUntil(
+                        MaterialPageRoute(
+                            builder: (context) => const MainScreen()),
+                        (route) => false,
+                      );
+                    }
+                  } else {
+                    Get.showSnackbar(
+                      const CustomSnackBar(
+                        response: 'Username cannot be less than 3 characters',
+                        backgroundColor: Color.fromARGB(255, 200, 19, 6),
+                        title: 'Error',
+                      ).build(context),
+                    );
+                  }
                 },
                 label: 'Continue',
                 filled: true,
@@ -103,12 +157,17 @@ class ProfileImageCircle extends StatelessWidget {
   const ProfileImageCircle({
     super.key,
     required this.isEditable,
+    this.onPressed,
+    this.imagePath,
   });
 
   final bool isEditable;
+  final String? imagePath;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
+    UserController userController = Get.put(UserController());
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -143,20 +202,30 @@ class ProfileImageCircle extends StatelessWidget {
                 ),
               ],
             ),
-            child: ClipOval(
-              child: SvgPicture.asset(
-                'assets/illustrations/food_bg_1.svg',
-              ),
-            ),
+            child: Obx(() => ClipOval(
+              child: userController.hasProfilePic()
+                  ? FadeInImage.assetNetwork(
+                    placeholder: 'assets/illustrations/food_bg_1.png',
+                      image: userController.userModel.value.profilePic!,
+                      fit: BoxFit.cover,
+                    )
+                  : imagePath == null
+                      ? SvgPicture.asset(
+                          'assets/illustrations/food_bg_1.svg',
+                        )
+                      : Image.file(
+                          File(imagePath!),
+                          fit: BoxFit.cover,
+                          //TODO: Put the error builder
+                        ),
+            ),),
           ),
           isEditable
               ? Positioned(
                   bottom: 0,
                   right: 0,
                   child: IconButton.filled(
-                    onPressed: () {
-                      //TODO: Oppen image selection file
-                    },
+                    onPressed: onPressed,
                     style: ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll(
                         Colors.orange.shade700,

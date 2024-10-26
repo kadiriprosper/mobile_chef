@@ -1,8 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:recipe_on_net/controller/auth_controller.dart';
+import 'package:recipe_on_net/controller/recipe_controller.dart';
+import 'package:recipe_on_net/controller/storage_controller.dart';
+import 'package:recipe_on_net/controller/user_controller.dart';
 import 'package:recipe_on_net/view/auth/forgotten_password_screen.dart';
 import 'package:recipe_on_net/view/auth/registration_screen.dart';
+import 'package:recipe_on_net/view/main_screens/main_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
 import 'package:recipe_on_net/view/widgets/custom_external_auth_button.dart';
@@ -45,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.1,
             ),
-            Text(
+            const Text(
               'Welcome Back',
               style: TextStyle(
                 fontSize: 32,
@@ -118,9 +124,45 @@ class _LoginScreenState extends State<LoginScreen> {
             CustomAuthButton(
               filled: true,
               label: 'Login',
-              onTap: () {
+              onTap: () async {
+                AuthController authController = Get.put(AuthController());
                 if (formKey.currentState?.validate() == true) {
-                  //TODO: Login User
+                  final response = await Get.showOverlay(
+                    asyncFunction: () => authController.signInUser(
+                      email: emailController.text,
+                      password: passwordController.text,
+                    ),
+                    loadingWidget: const SpinKitFadingCube(
+                      color: Colors.brown,
+                      size: 20,
+                    ),
+                  );
+                  if (response == null) {
+                    UserController userController =
+                        Get.put(UserController(), permanent: true);
+                    StorageController storageController =
+                        Get.put(StorageController());
+                    userController.setUserEmail(emailController.text);
+                    final secondResponse = await storageController
+                        .getUserData(emailController.text);
+                    if (secondResponse != null) {
+                      userController.userModel.value = secondResponse;
+                      await userController.parseSavedRecipes();
+                      
+                    }
+                    RecipeController recipeController =
+                        Get.put(RecipeController());
+                    await recipeController.getRandomMeal();
+                    Get.to(() => const MainScreen());
+                  } else {
+                    Get.showSnackbar(
+                      CustomSnackBar(
+                        response: response,
+                        backgroundColor: const Color.fromARGB(255, 200, 19, 6),
+                        title: 'Error',
+                      ).build(context),
+                    );
+                  }
                 }
               },
             ),
@@ -153,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(child: Divider()),
                 SizedBox(width: 8),
                 Text(
-                  'Continue with',
+                  'OR',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -172,16 +214,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Expanded(
                       child: CustomExternalAuthButton(
-                        buttonLabel: 'Google',
-                        icon: const Icon(Icons.dashboard_customize),
-                        onPressed: () {},
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: CustomExternalAuthButton(
-                        buttonLabel: 'Facebook',
-                        icon: const Icon(Icons.dashboard_customize),
+                        buttonLabel: 'Continue with Google',
+                        icon: Image.asset(
+                          'assets/icons/google_icon.png',
+                          height: 36,
+                          width: 36,
+                        ),
                         onPressed: () {},
                       ),
                     ),
@@ -209,9 +247,37 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 10),
           ],
         ),
       ),
     );
+  }
+}
+
+class CustomSnackBar extends StatelessWidget {
+  const CustomSnackBar({
+    super.key,
+    required this.response,
+    required this.title,
+    required this.backgroundColor,
+  });
+
+  final String? response;
+  final Color backgroundColor;
+  final String title;
+
+  @override
+  GetSnackBar build(BuildContext context) {
+    return GetSnackBar(
+        title: title,
+        message: response,
+        backgroundColor: backgroundColor,
+        borderColor: Colors.white,
+        borderRadius: 12,
+        margin: const EdgeInsets.all(20),
+        duration: const Duration(seconds: 2),
+        isDismissible: true,
+        snackPosition: SnackPosition.TOP);
   }
 }

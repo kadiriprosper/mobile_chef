@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:recipe_on_net/controller/auth_controller.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
 
@@ -13,6 +15,7 @@ class ForgottenPasswordScreen extends StatefulWidget {
 }
 
 class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
+  final formKey = GlobalKey<FormState>();
   TextEditingController emailController = Get.put(
     TextEditingController(),
     tag: 'ForgotPasswordEmail',
@@ -37,7 +40,9 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
               Align(
                 alignment: Alignment.topLeft,
                 child: IconButton.filled(
-                  onPressed: () {},
+                  onPressed: () {
+                    Get.back();
+                  },
                   iconSize: 26,
                   style: ButtonStyle(
                     minimumSize: const WidgetStatePropertyAll(Size(38, 38)),
@@ -57,7 +62,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                 // ),
               ),
               const SizedBox(height: 20),
-              Text(
+              const Text(
                 'FORGOT YOUR PASSWORD?',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -90,24 +95,55 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    CustomAuthTextFormField(
-                      controller: emailController,
-                      hintText: 'E-mail',
-                      prefixIcon: Icon(
-                        Icons.alternate_email_outlined,
-                        color: Colors.orange.shade600,
+                    Form(
+                      key: formKey,
+                      child: CustomAuthTextFormField(
+                        controller: emailController,
+                        hintText: 'E-mail',
+                        prefixIcon: Icon(
+                          Icons.alternate_email_outlined,
+                          color: Colors.orange.shade600,
+                        ),
+                        textInputType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value != null && value.isEmail) {
+                            return null;
+                          }
+                          return 'Enter valid email';
+                        },
                       ),
-                      textInputType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value != null && value.isEmail) {
-                          return null;
-                        }
-                        return 'Enter valid email';
-                      },
                     ),
                     const SizedBox(height: 20),
                     CustomAuthButton(
-                      onTap: () {},
+                      onTap: () async {
+                        if (formKey.currentState?.validate() == true) {
+                          AuthController authController =
+                              Get.put(AuthController());
+                          final response = await Get.showOverlay(
+                            asyncFunction: () =>
+                                authController.sendPasswordResetEmail(
+                              email: emailController.text,
+                            ),
+                            loadingWidget: const SpinKitFadingCube(
+                              color: Colors.brown,
+                              size: 20,
+                            ),
+                          );
+                          if (response == null) {
+                            //TODO: Go to password & otp entry page
+                          } else {
+                            Get.snackbar(
+                              'Error',
+                              response,
+                              backgroundColor:
+                                  const Color.fromARGB(255, 93, 27, 22),
+                              colorText: Colors.white,
+                              borderColor: Colors.white,
+                              margin: const EdgeInsets.all(20),
+                            );
+                          }
+                        }
+                      },
                       label: 'Send Reset Link',
                       filled: true,
                     ),
