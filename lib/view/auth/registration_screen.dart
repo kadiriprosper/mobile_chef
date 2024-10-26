@@ -1,6 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:recipe_on_net/controller/auth_controller.dart';
+import 'package:recipe_on_net/controller/user_controller.dart';
 import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/auth/profile_setup_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
@@ -75,23 +78,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 key: formKey,
                 child: Column(
                   children: [
-                    CustomAuthTextFormField(
-                      controller: userNameController,
-                      filled: false,
-                      hintText: 'Username',
-                      prefixIcon: Icon(
-                        Icons.person_outline,
-                        color: Colors.orange.shade600,
-                      ),
-                      textInputType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value != null && value.length >= 3) {
-                          return null;
-                        }
-                        return 'Username cannot be less than 3 characters';
-                      },
-                    ),
-                    const SizedBox(height: 8),
                     CustomAuthTextFormField(
                       controller: emailController,
                       filled: false,
@@ -177,10 +163,34 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               CustomAuthButton(
                 filled: true,
                 label: 'Create Account',
-                onTap: () {
+                onTap: () async {
                   if (formKey.currentState?.validate() == true) {
-                    //TODO: Perform login
-                    Get.off(() => const ProfileSetupScreen());
+                    AuthController authController = Get.put(AuthController());
+                    UserController userController =
+                        Get.put(UserController(), permanent: true);
+                    userController.setUserEmail(emailController.text);
+                    final response = await Get.showOverlay(
+                      asyncFunction: () => authController.registerUser(
+                        email: emailController.text,
+                        password: passwordController.text,
+                      ),
+                      loadingWidget: const SpinKitFadingCube(
+                        color: Colors.brown,
+                        size: 20,
+                      ),
+                    );
+                    if (response == null) {
+                      Get.off(() => const ProfileSetupScreen());
+                    } else {
+                      Get.showSnackbar(
+                        CustomSnackBar(
+                          response: response,
+                          backgroundColor:
+                              const Color.fromARGB(255, 200, 19, 6),
+                          title: 'Error',
+                        ).build(context),
+                      );
+                    }
                   }
                 },
               ),
@@ -190,7 +200,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   Expanded(child: Divider()),
                   SizedBox(width: 8),
                   Text(
-                    'Or Continue with',
+                    'OR',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -207,17 +217,38 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   children: [
                     Expanded(
                       child: CustomExternalAuthButton(
-                        buttonLabel: 'Google',
-                        icon: const Icon(Icons.dashboard_customize),
-                        onPressed: () {},
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: CustomExternalAuthButton(
-                        buttonLabel: 'Facebook',
-                        icon: const Icon(Icons.dashboard_customize),
-                        onPressed: () {},
+                        buttonLabel: 'Continue with Google',
+                        icon: Image.asset(
+                          'assets/icons/google_icon.png',
+                          height: 36,
+                          width: 36,
+                        ),
+                        onPressed: () async {
+                          AuthController authController =
+                              Get.put(AuthController());
+
+                          final response = await Get.showOverlay(
+                            asyncFunction: () =>
+                                authController.signInUserWithGoogle(),
+                            loadingWidget: const SpinKitFadingCube(
+                              color: Colors.brown,
+                              size: 20,
+                            ),
+                          );
+                          if (response == null) {
+                            Get.off(() => const ProfileSetupScreen());
+                          } else {
+                            Get.snackbar(
+                              'Error',
+                              response,
+                              backgroundColor:
+                                  const Color.fromARGB(255, 93, 27, 22),
+                              colorText: Colors.white,
+                              borderColor: Colors.white,
+                              margin: const EdgeInsets.all(20),
+                            );
+                          }
+                        },
                       ),
                     ),
                   ],

@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:recipe_on_net/controller/auth_controller.dart';
+import 'package:recipe_on_net/controller/global_controller.dart';
+import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/model/user_model.dart';
+import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/auth/profile_setup_screen.dart';
 import 'package:recipe_on_net/view/profile_pages/edit_profile_page.dart';
+import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    UserController userController = Get.put(UserController());
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -24,32 +32,50 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ProfileImageCircle(
+            const ProfileImageCircle(
               isEditable: false,
             ),
             const SizedBox(height: 20),
-            Text(
-              'User Name',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
-                color: Colors.black,
+            Obx(
+              () => Text(
+                userController.userModel.value.userName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'usermail',
-              style: TextStyle(
+              userController.userModel.value.email,
+              style: const TextStyle(
                 fontSize: 16,
                 color: Colors.black,
               ),
             ),
             const SizedBox(height: 10),
             MaterialButton(
-              onPressed: () {
-                Get.to(
-                  () => const EditProfilePage(),
-                );
+              onPressed: () async {
+                await Get.to(() => const EditProfilePage());
+                if (userController.updateSuccess == true) {
+                  Get.showSnackbar(
+                    const CustomSnackBar(
+                      response: 'Profile successfully updated',
+                      backgroundColor: Colors.green,
+                      title: 'Success',
+                    ).build(context),
+                  );
+                } else if (userController.updateSuccess == false) {
+                  Get.showSnackbar(
+                    const CustomSnackBar(
+                      response: 'Error updating user profile',
+                      backgroundColor: Color.fromARGB(255, 200, 19, 6),
+                      title: 'Error',
+                    ).build(context),
+                  );
+                }
+                userController.updateSuccess = null;
               },
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
               height: 44,
@@ -69,8 +95,32 @@ class ProfilePage extends StatelessWidget {
                   backgroundColor: Colors.transparent,
                   enableDrag: true,
                   builder: (context) => CustomBottomSheet(
-                    onTap: () {
-                      //TODO: Clear AI chats
+                    onTap: () async {
+                      final response = await Get.showOverlay(
+                        asyncFunction: () => userController.clearSavedChats(),
+                        loadingWidget: const SpinKitFadingCube(
+                          color: Colors.brown,
+                          size: 20,
+                        ),
+                      );
+                      Get.back();
+                      if (response == null) {
+                        Get.showSnackbar(
+                          const CustomSnackBar(
+                                  response: 'Chats Cleared Successfully',
+                                  title: 'Success',
+                                  backgroundColor: Colors.green)
+                              .build(context),
+                        );
+                      } else {
+                        Get.showSnackbar(
+                          CustomSnackBar(
+                            response: response,
+                            title: 'Error',
+                            backgroundColor: Colors.red,
+                          ).build(context),
+                        );
+                      }
                     },
                     label: 'Clear AI Chats',
                     bottomSheetHeight: 230,
@@ -93,8 +143,34 @@ class ProfilePage extends StatelessWidget {
                   backgroundColor: Colors.transparent,
                   enableDrag: true,
                   builder: (context) => CustomBottomSheet(
-                    onTap: () {
-                      //TODO: Clear saved  recipes
+                    onTap: () async {
+                      final response = await Get.showOverlay(
+                        asyncFunction: () => userController.clearSavedRecipe(),
+                        loadingWidget: const SpinKitFadingCube(
+                          color: Colors.brown,
+                          size: 20,
+                        ),
+                      );
+                      Get.back();
+                      if (response == null) {
+                        Get.showSnackbar(
+                          const CustomSnackBar(
+                                  response: 'Recipes Cleared Successfully',
+                                  title: 'Success',
+                                  backgroundColor: Colors.green)
+                              .build(context),
+                        );
+                      } else {
+                        Get.showSnackbar(
+                          CustomSnackBar(
+                            response: response,
+                            title: 'Error',
+                            backgroundColor: Colors.red,
+                          ).build(context),
+                        );
+                      }
+
+                      // Get.back();
                     },
                     label: 'Clear Saved Recipes',
                     bottomSheetHeight: 230,
@@ -116,8 +192,22 @@ class ProfilePage extends StatelessWidget {
                   backgroundColor: Colors.transparent,
                   enableDrag: true,
                   builder: (context) => CustomBottomSheet(
-                    onTap: () {
-                      //TODO: Log out the user
+                    onTap: () async {
+                      AuthController authController = Get.put(AuthController());
+                      final response = await authController.signOutUser();
+                      if (response == null) {
+                        Get.put(GlobalController()).currentIndex.value = 0;
+                        userController.userModel.value = UserModel(
+                          userName: '',
+                          email: '',
+                        );
+                        Get.offUntil(
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      }
                     },
                     label: 'Log Out',
                     bottomSheetHeight: 230,
@@ -155,7 +245,46 @@ class ProfilePage extends StatelessWidget {
                   builder: (context) => CustomBottomSheet(
                     onTap: () async {
                       await Get.dialog(
-                        const DestructiveActionAlertDialog(),
+                        DestructiveActionAlertDialog(
+                          onConfirm: (String password) async {
+                            AuthController authController =
+                                Get.put(AuthController());
+                            final response = await Get.showOverlay(
+                              asyncFunction: () =>
+                                  authController.deleteUserAccount(
+                                password: password,
+                                email: userController.userModel.value.email,
+                              ),
+                              loadingWidget: const SpinKitFadingCube(
+                                color: Colors.brown,
+                                size: 20,
+                              ),
+                            );
+                            if (response == null) {
+                              Get.put(
+                                GlobalController(),
+                              ).currentIndex.value = 0;
+                              userController.userModel.value = UserModel(
+                                userName: '',
+                                email: '',
+                              );
+                              Get.offUntil(
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginScreen(),
+                                ),
+                                (route) => false,
+                              );
+                            } else {
+                              Get.showSnackbar(
+                                CustomSnackBar(
+                                  response: response,
+                                  title: 'Error',
+                                  backgroundColor: Colors.red,
+                                ).build(context),
+                              );
+                            }
+                          },
+                        ),
                       );
                       Get.back();
                     },
@@ -177,9 +306,9 @@ class ProfilePage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               color: Colors.white,
-              child: Text(
+              child: const Text(
                 'Delete Account',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.red,
                   fontSize: 16,
                 ),
@@ -196,18 +325,45 @@ class ProfilePage extends StatelessWidget {
 class DestructiveActionAlertDialog extends StatelessWidget {
   const DestructiveActionAlertDialog({
     super.key,
+    required this.onConfirm,
   });
+
+  final Function(String password) onConfirm;
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController passwordController = Get.put(
+      TextEditingController(),
+      tag: 'PasswordConfirmDeleteAction',
+    );
     return AlertDialog(
       title: const Text(
         'Delete Account',
         style: TextStyle(color: Colors.white),
       ),
-      content: const Text(
-        'You are about to delete your account.\nThis would erase completely your information from the database.\nDo you really really want to do this.',
-        style: TextStyle(color: Colors.white),
+      content: SizedBox(
+        height: 200,
+        child: Column(
+          children: [
+            const Text(
+              'You are about to delete your account.\nThis would erase completely your information from the database.\nDo you really really want to do this.',
+              style: TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 40),
+            CustomAuthTextFormField(
+              hintText: 'Password',
+              controller: passwordController,
+              prefixIcon: const Icon(Icons.key_outlined),
+              validator: (value) {
+                if (value != null && value.length >= 8) {
+                  return null;
+                }
+                return 'Invalid password';
+              },
+              textInputType: TextInputType.visiblePassword,
+            ),
+          ],
+        ),
       ),
       backgroundColor: Colors.black,
       actions: [
@@ -221,8 +377,10 @@ class DestructiveActionAlertDialog extends StatelessWidget {
           child: const Text('Cancel'),
         ),
         MaterialButton(
-          onPressed: () {
-            //TODO: Delete the user's account
+          onPressed: () async {
+            if (passwordController.text.length >= 8) {
+              await onConfirm(passwordController.text);
+            }
           },
           height: 50,
           color: Colors.red,
@@ -232,7 +390,7 @@ class DestructiveActionAlertDialog extends StatelessWidget {
             ),
           ),
           textColor: Colors.white,
-          child: Text('Continue'),
+          child: const Text('Continue'),
         ),
       ],
     );

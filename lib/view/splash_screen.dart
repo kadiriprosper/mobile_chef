@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:recipe_on_net/constants/constants.dart';
+import 'package:recipe_on_net/controller/recipe_controller.dart';
+import 'package:recipe_on_net/controller/storage_controller.dart';
+import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/model/network_model.dart';
 import 'package:recipe_on_net/view/auth/login_screen.dart';
-import 'package:recipe_on_net/view/onboarding/onboarding_screen.dart';
+import 'package:recipe_on_net/view/main_screens/main_screen.dart';
+import 'package:recipe_on_net/view/networt_error_page.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -14,8 +20,58 @@ class SplashScreen extends StatelessWidget {
       body: FutureBuilder(
         future: Future.delayed(
           const Duration(seconds: 3),
-          () {
-            Get.to(() => const LoginScreen());
+          () async {
+            const storage = FlutterSecureStorage();
+            final response = await storage.read(key: emailDB);
+            if (response != null && response.isNotEmpty) {
+              final networkResponse = await isNetworkAvailable();
+              if (networkResponse) {
+                //
+                UserController userController = Get.put(
+                  UserController(),
+                  permanent: true,
+                );
+                //
+                StorageController storageController = Get.put(
+                  StorageController(),
+                );
+                //
+                userController.setUserEmail(response);
+                //
+                final secondResponse =
+                    await storageController.getUserData(response);
+                //
+                if (secondResponse != null) {
+                  userController.userModel.value = secondResponse;
+                  await userController.parseSavedRecipes();
+                }
+                //
+                RecipeController recipeController = Get.put(RecipeController());
+                //
+                await recipeController.getRandomMeal();
+                //
+                Get.offUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const MainScreen(),
+                  ),
+                  (route) => false,
+                );
+              } else {
+                Get.offUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const NetwortErrorPage(),
+                  ),
+                  (route) => false,
+                );
+              }
+            } else {
+              Get.offUntil(
+                MaterialPageRoute(
+                  builder: (context) => const LoginScreen(),
+                ),
+                (route) => false,
+              );
+            }
           },
         ),
         builder: (context, snapshot) {
@@ -28,7 +84,7 @@ class SplashScreen extends StatelessWidget {
                 width: MediaQuery.of(context).size.width,
               ),
               //TODO: Change the text to the logo later
-              Text(
+              const Text(
                 'Mobile Chef',
                 style: TextStyle(
                   fontSize: 32,
@@ -36,7 +92,7 @@ class SplashScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              SpinKitFadingCube(
+              const SpinKitFadingCube(
                 color: Colors.brown,
                 size: 20,
               ),

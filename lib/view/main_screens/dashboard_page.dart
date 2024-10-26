@@ -3,46 +3,27 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:recipe_on_net/constants/constants.dart';
+import 'package:recipe_on_net/constants/enums.dart';
+import 'package:recipe_on_net/constants/helpers.dart';
+import 'package:recipe_on_net/controller/recipe_controller.dart';
+import 'package:recipe_on_net/view/main_screens/widgets/dashboard_section_widget.dart';
+import 'package:recipe_on_net/view/main_screens/widgets/large_recipe_card.dart';
+import 'package:recipe_on_net/view/recipe_details_screen.dart';
 import 'package:recipe_on_net/view/search_screen.dart';
-
-enum DashboardSectionCategoryEnum {
-  beef,
-  vegetarians,
-  seafood,
-}
-
-const timeOfDayEmoji = [
-  '🔆',
-  '☀️',
-  '🌤️',
-  '🌙',
-  '🌚',
-];
-
-const dashboardMessage = [
-  'howdy there 👋',
-  'good day 😁',
-  'hi there 😉',
-];
 
 Random randomMessage = Random(0);
 
-String emojiTimeOfDay() {
-  if (TimeOfDay.now().hour > 0 && TimeOfDay.now().hour <= 5) {
-    return timeOfDayEmoji[0];
-  } else if (TimeOfDay.now().hour > 5 && TimeOfDay.now().hour < 12) {
-    return timeOfDayEmoji[1];
-  } else if (TimeOfDay.now().hour >= 12 && TimeOfDay.now().hour < 17) {
-    return timeOfDayEmoji[2];
-  } else if (TimeOfDay.now().hour >= 17 && TimeOfDay.now().hour < 20) {
-    return timeOfDayEmoji[3];
-  } else {
-    return timeOfDayEmoji[4];
-  }
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+class _DashboardPageState extends State<DashboardPage> {
+  RecipeController recipeController = Get.put(RecipeController());
+  bool randomRecipeLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +38,6 @@ class DashboardPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  //TODO: Change this to a list of welcome messages
                   Text(
                     dashboardMessage[
                         randomMessage.nextInt(dashboardMessage.length)],
@@ -138,16 +118,38 @@ class DashboardPage extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
-                      // TODO: Refresh the random recipe
-                    },
+                    onPressed: !randomRecipeLoading
+                        ? () async {
+                            randomRecipeLoading = true;
+                            setState(() {});
+
+                            await recipeController.getRandomMeal();
+                            randomRecipeLoading = false;
+                            setState(() {});
+                          }
+                        : null,
                     icon: const Icon(Iconsax.refresh_outline),
-                    color: Colors.deepOrange.shade900,
+                    color: const Color.fromARGB(255, 255, 47, 0),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
-              LargeRecipeCard(),
+              Obx(
+                () => LargeRecipeCard(
+                  recipe: recipeController.randomRecipe?.value,
+                  onTap: () {
+                    recipeController.selectedRecipe =
+                        recipeController.randomRecipe?.value;
+                    if (recipeController.selectedRecipe != null) {
+                      Get.to(
+                        () => RecipeDetailsScreen(
+                          mealId: recipeController.selectedRecipe!.id,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
               const SizedBox(height: 24),
               DashboardSectionWidget(
                 onPressed: () {},
@@ -158,229 +160,18 @@ class DashboardPage extends StatelessWidget {
               DashboardSectionWidget(
                 onPressed: () {},
                 sectionLabel: 'Seafood Geng',
-                selectedCategory: DashboardSectionCategoryEnum.beef,
+                selectedCategory: DashboardSectionCategoryEnum.seafood,
               ),
               const SizedBox(height: 24),
               DashboardSectionWidget(
                 onPressed: () {},
                 sectionLabel: 'Veggie Only',
-                selectedCategory: DashboardSectionCategoryEnum.beef,
+                selectedCategory: DashboardSectionCategoryEnum.vegetarian,
               ),
               const SizedBox(height: 24),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class LargeRecipeCard extends StatelessWidget {
-  const LargeRecipeCard({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () {
-        //TODO: Go to recipe details screen
-      },
-      child: Container(
-        height: 200,
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.grey,
-              blurRadius: 5,
-              offset: Offset(3, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              height: 200,
-              width: 200,
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(12).copyWith(
-                  topRight: Radius.zero,
-                  bottomRight: Radius.zero,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    Text(
-                      'American Dish',
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'Lorem Ispum Food Pasta and Egg Dish and fish stain',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Lorem Ispum Food Pasta and Egg Dish and fish stain',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DashboardSectionWidget extends StatelessWidget {
-  const DashboardSectionWidget({
-    super.key,
-    required this.sectionLabel,
-    required this.onPressed,
-    required this.selectedCategory,
-  });
-
-  final String sectionLabel;
-  final VoidCallback onPressed;
-  final DashboardSectionCategoryEnum selectedCategory;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              sectionLabel,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            MaterialButton(
-              onPressed: onPressed,
-              padding: const EdgeInsets.all(0),
-              minWidth: 0,
-              child: Text(
-                'see all',
-                style: TextStyle(
-                  color: Colors.orange.shade800,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(
-              5,
-              (index) => CustomRecipeCard(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class CustomRecipeCard extends StatelessWidget {
-  const CustomRecipeCard({
-    super.key,
-    this.addMargin,
-  });
-
-  final bool? addMargin;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 330,
-      width: 230,
-      margin: addMargin == false
-          ? null
-          : const EdgeInsets.all(5).copyWith(right: 15),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.grey,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 250,
-            height: 200,
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              borderRadius: BorderRadius.circular(12).copyWith(
-                bottomLeft: Radius.zero,
-                bottomRight: Radius.zero,
-              ),
-            ),
-          ),
-          const Spacer(),
-          Text(
-            'Egg Pasta',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Spicy Chicken Pasta ',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          const Spacer(),
-        ],
       ),
     );
   }
