@@ -170,10 +170,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Get.put(UserController(), permanent: true);
                     userController.setUserEmail(emailController.text);
                     final response = await Get.showOverlay(
-                      asyncFunction: () => authController.registerUser(
-                        email: emailController.text,
-                        password: passwordController.text,
-                      ),
+                      asyncFunction: () async {
+                        final innerResponse = await authController.registerUser(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        );
+                        if (innerResponse == null) {
+                          userController.setUserName('anonymous');
+                          final storageResponse =
+                              await userController.saveUserDetailsToCloud();
+                          if (storageResponse == null) {
+                            return null;
+                          } else {
+                            await authController.deleteUserAccount(
+                              password: passwordController.text,
+                              email: emailController.text,
+                            );
+                            return 'Error creating user account';
+                          }
+                        }
+                      },
                       loadingWidget: const SpinKitFadingCube(
                         color: Colors.brown,
                         size: 20,

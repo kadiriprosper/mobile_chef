@@ -249,6 +249,7 @@ class ProfilePage extends StatelessWidget {
                           onConfirm: (String password) async {
                             AuthController authController =
                                 Get.put(AuthController());
+                                //TODO: Delete details for the user
                             final response = await Get.showOverlay(
                               asyncFunction: () =>
                                   authController.deleteUserAccount(

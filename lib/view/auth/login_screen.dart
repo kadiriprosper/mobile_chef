@@ -143,8 +143,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     StorageController storageController =
                         Get.put(StorageController());
                     userController.setUserEmail(emailController.text);
-                    final secondResponse = await storageController
-                        .getUserData(emailController.text);
+                    final secondResponse = await Get.showOverlay(
+                    asyncFunction: () => storageController
+                        .getUserData(emailController.text),
+                    loadingWidget: const SpinKitFadingCube(
+                      color: Colors.brown,
+                      size: 20,
+                    ));
                     if (secondResponse != null) {
                       userController.userModel.value = secondResponse;
                       await userController.parseSavedRecipes();
