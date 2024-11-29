@@ -4,14 +4,14 @@ import 'package:recipe_on_net/model/recipe_model.dart';
 
 class UserModel {
   UserModel({
-    required this.userName,
+    required String tempUserName,
     required this.email,
     this.fromCloud = false,
     this.profilePic,
     this.savedChats,
     this.savedRecipe,
-  });
-  String userName;
+  }) : userName = tempUserName.obs;
+  RxString userName;
   String email;
   String? profilePic;
   bool fromCloud;
@@ -20,7 +20,7 @@ class UserModel {
 
   Map<String, dynamic> userToMap() {
     return {
-      "username": userName,
+      "username": userName.value,
       "email": email,
       "profile_pic": profilePic,
       "from_cloud": true,
@@ -39,7 +39,7 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> data) {
     final userModel = UserModel(
-      userName: data['username'],
+      tempUserName: data['username'],
       email: data['email'],
       fromCloud: data['from_cloud'] ?? false,
       profilePic: data['profile_pic'],

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
 class CustomExternalAuthButton extends StatelessWidget {
-  const CustomExternalAuthButton({
-    super.key,
-    required this.buttonLabel,
-    required this.icon,
-    required this.onPressed,
-  });
+  const CustomExternalAuthButton(
+      {super.key,
+      required this.buttonLabel,
+      required this.icon,
+      required this.onPressed,
+      this.color});
 
   final String buttonLabel;
   final Widget icon;
   final VoidCallback onPressed;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +29,10 @@ class CustomExternalAuthButton extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             buttonLabel,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
+              color: color ?? Colors.black,
             ),
           ),
         ],

@@ -19,7 +19,7 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       body: FutureBuilder(
         future: Future.delayed(
-          const Duration(seconds: 3),
+          const Duration(seconds: 0),
           () async {
             const storage = FlutterSecureStorage();
             final response = await storage.read(key: emailDB);
@@ -31,6 +31,8 @@ class SplashScreen extends StatelessWidget {
                   UserController(),
                   permanent: true,
                 );
+                userController.userLoginType =
+                    await storage.read(key: loginTypeDB);
                 //
                 StorageController storageController = Get.put(
                   StorageController(),
@@ -76,25 +78,36 @@ class SplashScreen extends StatelessWidget {
         ),
         builder: (context, snapshot) {
           //TODO: Splash Screen
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          return Stack(
             children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-              ),
-              //TODO: Change the text to the logo later
-              const Text(
-                'Mobile Chef',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w300,
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/illustrations/chef.png',
+                      width: 100,
+                      height: 100,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Mobile Chef',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              const SpinKitFadingCube(
-                color: Colors.brown,
-                size: 20,
+              const Positioned(
+                bottom: 20,
+                right: 0,
+                left: 0,
+                child: SpinKitFadingCube(
+                  color: Colors.brown,
+                  size: 20,
+                ),
               ),
             ],
           );

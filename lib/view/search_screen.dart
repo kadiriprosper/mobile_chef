@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:recipe_on_net/constants/constants.dart';
@@ -167,17 +168,50 @@ class _SearchScreenState extends State<SearchScreen> {
                         } else if (snapshot.hasData &&
                             snapshot.data?.entries.first.key ==
                                 AccessCondition.networkError) {
-                          return const Center(
-                            child: Icon(Icons.error_outline_outlined),
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical:
+                                    MediaQuery.of(context).size.height * 0.15,
+                              ),
+                              child: AspectRatio(
+                                aspectRatio: 4 / 3,
+                                child: SvgPicture.asset(
+                                    'assets/illustrations/network_error.svg'),
+                              ),
+                            ),
                           );
                         } else if (snapshot.hasError ||
                             snapshot.hasData &&
                                 snapshot.data?.entries.first.key ==
                                     AccessCondition.error) {
-                          return const Center(
-                            child: Icon(Icons.error_outline_outlined),
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: MediaQuery.of(context).size.height *
+                                      0.15,),
+                              child: AspectRatio(
+                                aspectRatio: 4 / 3,
+                                child: Image.asset(
+                                    'assets/illustrations/emptyCarton.png'),
+                              ),
+                            ),
                           );
                         }
+                        // else if (snapshot.hasData &&
+                        //     snapshot.data?.entries.first.key ==
+                        //         AccessCondition.networkError) {
+                        //   return const Center(
+                        //     child: Icon(Icons.error_outline_outlined),
+                        //   );
+                        // } else if (snapshot.hasError ||
+                        //     snapshot.hasData &&
+                        //         snapshot.data?.entries.first.key ==
+                        //             AccessCondition.error) {
+                        //   return const Center(
+                        //     child: Icon(Icons.error_outline_outlined),
+                        //   );
+                        // }
                         return const Padding(
                           padding: EdgeInsets.all(20),
                           child: SpinKitFadingCube(

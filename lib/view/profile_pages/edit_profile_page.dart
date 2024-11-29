@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:recipe_on_net/constants/enums.dart';
 import 'package:recipe_on_net/controller/storage_controller.dart';
 import 'package:recipe_on_net/controller/user_controller.dart';
 import 'package:recipe_on_net/view/auth/login_screen.dart';
@@ -23,7 +24,9 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   File? profilePic;
+
   final formKey = GlobalKey<FormState>();
+  UserController userController = Get.put(UserController());
 
   TextEditingController usernameController = Get.put(
     TextEditingController(),
@@ -63,7 +66,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           children: [
             ProfileImageCircle(
               isEditable: true,
-              imagePath: profilePic?.path,
+              imagePath: Get.put(UserController()).userModel.value.profilePic,
+              onDeviceFilePath: profilePic?.path,
               onPressed: () async {
                 ImagePicker imagePicker = ImagePicker();
                 final tempFile = await imagePicker.pickImage(
@@ -119,19 +123,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             const SizedBox(height: 20),
             ProfileCustomButton(
-              onPressed: () {
+              onPressed: userController.userLoginType == LoginTypeEnum.email.toString() ?  () {
                 Get.to(
                   () => const ChangePasswordScreen(),
                 );
-              },
+              } : null,
               label: 'Change Password',
             ),
             const SizedBox(height: 80),
             CustomAuthButton(
               onTap: () async {
                 if (formKey.currentState?.validate() == true) {
-                  //TODO: Save the user details
-                  UserController userController = Get.put(UserController());
+                  
                   StorageController storageController = Get.put(
                     StorageController(),
                   );
@@ -149,12 +152,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         if (profileImgUrl != 'Error Setting profile pic') {
                           userController.setProfilePic(profileImgUrl);
                         }
-                        // userController.setProfilePic(
-                        //   await storageController.storeProfilePic(
-                        //     profilePic!,
-                        //     userController.userModel.value.email,
-                        //   ),
-                        // );
+                        userController.setProfilePic(
+                          await storageController.storeProfilePic(
+                            profilePic!,
+                            userController.userModel.value.email,
+                          ),
+                        );
                       }
                       return await storageController.storeUserData(
                         userController.userModel.value,

@@ -1,15 +1,15 @@
 import 'package:get/get.dart';
-import 'package:recipe_on_net/controller/recipe_controller.dart';
-import 'package:recipe_on_net/controller/storage_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
+
 import 'package:recipe_on_net/model/message_model.dart';
 import 'package:recipe_on_net/model/network_model.dart';
 import 'package:recipe_on_net/model/recipe_model.dart';
 import 'package:recipe_on_net/model/user_model.dart';
 
 class UserController extends GetxController {
+  String? userLoginType;
   late Rx<UserModel> userModel;
-  StorageController storageController = Get.put(StorageController());
-  RecipeController recipeController = Get.put(RecipeController());
+  
   RxList<int> chatIndexToDelete = <int>[].obs;
   //  = UserModel(
   //   userName: '',
@@ -34,8 +34,10 @@ class UserController extends GetxController {
 
   void setUserEmail(String email) {
     userModel = UserModel(
-      userName: '',
+      tempUserName: '',
       email: email,
+      savedChats: <ChatModel>[].obs,
+      savedRecipe: <RecipeModel>[].obs,
     ).obs;
     // userModel.value.email = email;
   }
@@ -45,7 +47,7 @@ class UserController extends GetxController {
   }
 
   void setUserName(String userName) {
-    userModel.value.userName = userName;
+    userModel.value.userName = userName.obs;
   }
 
   Future<void> updateChats(ChatModel chat) async {
@@ -117,5 +119,14 @@ class UserController extends GetxController {
     } catch (_) {
       return 'error';
     }
+  }
+
+    Future<String?> saveUserDetailsOnGoogleToCloud() async {
+    
+      return await storageController.storeUserData(
+        userModel.value,
+      );
+      
+    
   }
 }

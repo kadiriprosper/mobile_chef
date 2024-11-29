@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
-import 'package:recipe_on_net/controller/auth_controller.dart';
-import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
 import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/search_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
@@ -173,14 +172,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     const SizedBox(height: 30),
                     CustomAuthButton(
                       onTap: () async {
-                        AuthController authController = Get.put(
-                          AuthController(),
-                        );
-                        UserController userController = Get.put(
-                          UserController(),
-                        );
-                        //TODO: show a snackbar to show status
-
                         final response = await Get.showOverlay(
                           asyncFunction: () =>
                               authController.changeUserPassword(
@@ -201,6 +192,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               title: 'Success',
                             ).build(context),
                           );
+                          Get.back();
                         } else {
                           Get.showSnackbar(
                             CustomSnackBar(

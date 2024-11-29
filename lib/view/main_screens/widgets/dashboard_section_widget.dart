@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:get/get.dart';
 import 'package:recipe_on_net/constants/enums.dart';
-import 'package:recipe_on_net/controller/recipe_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
 import 'package:recipe_on_net/model/network_model.dart';
 import 'package:recipe_on_net/view/main_screens/widgets/custom_recipe_card.dart';
 
@@ -20,7 +19,6 @@ class DashboardSectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final recipeController = Get.put(RecipeController());
     return FutureBuilder(
         future:
             recipeController.getCategoryData(category: selectedCategory.name),

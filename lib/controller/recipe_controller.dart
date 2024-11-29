@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:recipe_on_net/model/network_model.dart';
 import 'package:recipe_on_net/model/recipe_down_model.dart';
@@ -5,6 +6,11 @@ import 'package:recipe_on_net/model/recipe_model.dart';
 
 class RecipeController extends GetxController {
   Rx<RecipeModel>? randomRecipe;
+
+  //TODO: TEST
+  RxInt selectedRecipesIndex = 0.obs;
+  
+
   RecipeModel? selectedRecipe;
 
   Map<String, List<RecipeDownModel>> categoryRecipes = {};

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
-import 'package:recipe_on_net/controller/global_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
 import 'package:recipe_on_net/view/main_screens/ai_chef_page.dart';
 import 'package:recipe_on_net/view/main_screens/cart_page.dart';
 import 'package:recipe_on_net/view/main_screens/dashboard_page.dart';
@@ -16,7 +16,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  GlobalController globalController = Get.put(GlobalController());
   final pages = const [
     DashboardPage(),
     RecipesPage(),
@@ -24,48 +23,66 @@ class _MainScreenState extends State<MainScreen> {
     CartPage(),
     ProfilePage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    globalController.canLeaveApp = false.obs;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Obx(() => pages[globalController.currentIndex.value]),
-      bottomNavigationBar:Obx(() =>  BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        currentIndex: globalController.currentIndex.value,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
-        onTap: (value) {
-          setState(() {
-            globalController.currentIndex.value = value;
-          });
+    return Obx(
+      () => PopScope(
+        canPop: globalController.canLeaveApp.value,
+        onPopInvokedWithResult: (didPop, result) {
+          globalController.popIndexStack(context);
+          setState(() {});
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Iconsax.home_outline),
-            activeIcon: Icon(Iconsax.home_bold),
-            label: 'Home',
+        child: Scaffold(
+          body : Obx(() => pages[globalController.currentIndex.value]),
+          bottomNavigationBar: Obx(
+            () => BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              currentIndex: globalController.currentIndex.value,
+              selectedItemColor: Colors.orange,
+              unselectedItemColor: Colors.grey,
+              onTap: (value) {
+                setState(() {
+                  globalController.indexStack = [value];
+                });
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Iconsax.home_outline),
+                  activeIcon: Icon(Iconsax.home_bold),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Iconsax.book_outline),
+                  activeIcon: Icon(Iconsax.book_1_bold),
+                  label: 'Recipes',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(TeenyIcons.robot),
+                  label: 'Ai Chef',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Iconsax.bookmark_outline),
+                  activeIcon: Icon(Iconsax.bookmark_bold),
+                  label: 'Saved',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Iconsax.profile_circle_outline),
+                  activeIcon: Icon(Iconsax.profile_circle_bold),
+                  label: 'Profile',
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Iconsax.book_outline),
-            activeIcon: Icon(Iconsax.book_1_bold),
-            label: 'Recipes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(TeenyIcons.robot),
-            label: 'Ai Chef',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Iconsax.bookmark_outline),
-            activeIcon: Icon(Iconsax.bookmark_bold),
-            label: 'Saved',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Iconsax.profile_circle_outline),
-            activeIcon: Icon(Iconsax.profile_circle_bold),
-            label: 'Profile',
-          ),
-        ],
+        ),
       ),
-    ),);
+    );
   }
 }

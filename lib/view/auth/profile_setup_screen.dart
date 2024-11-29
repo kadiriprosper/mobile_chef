@@ -1,13 +1,11 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:recipe_on_net/controller/recipe_controller.dart';
-import 'package:recipe_on_net/controller/storage_controller.dart';
-import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
 import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/main_screens/main_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
@@ -21,6 +19,7 @@ class ProfileSetupScreen extends StatefulWidget {
 }
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
+
   File? profilePic;
   TextEditingController usernameController = Get.put(
     TextEditingController(),
@@ -31,7 +30,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF3E9),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -60,7 +59,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               const SizedBox(height: 20),
               ProfileImageCircle(
                 isEditable: true,
-                imagePath: profilePic?.path,
+                imagePath: userController.userModel.value.profilePic,
+                onDeviceFilePath: profilePic == null
+                    ? 'assets/illustrations/food_bg_1.png'
+                    : profilePic!.path,
                 onPressed: () async {
                   ImagePicker imagePicker = ImagePicker();
                   final tempFile = await imagePicker.pickImage(
@@ -105,26 +107,31 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               CustomAuthButton(
                 onTap: () async {
                   if (usernameController.text.length >= 3) {
-                    UserController userController = Get.put(UserController());
-                    StorageController storageController =
-                        Get.put(StorageController());
                     userController.setUserName(usernameController.text);
-                    if (profilePic != null) {
-                      final profileImgUrl =
-                          await storageController.storeProfilePic(
-                        profilePic!,
-                        userController.userModel.value.email,
-                      );
-                      if (profileImgUrl != 'Error Setting profile pic') {
-                        userController.setProfilePic(profileImgUrl);
-                      }
-                    }
-                    final response = await storageController.storeUserData(
-                      userController.userModel.value,
+                    final response = await Get.showOverlay(
+                      asyncFunction: () async {
+                        if (profilePic != null) {
+                          final profileImgUrl =
+                              await storageController.storeProfilePic(
+                            profilePic!,
+                            userController.userModel.value.email,
+                          );
+                          if (profileImgUrl != 'Error Setting profile pic') {
+                            userController.setProfilePic(profileImgUrl);
+                          }
+                        }
+                        return await storageController.storeUserData(
+                          userController.userModel.value,
+                        );
+                      },
+                      loadingWidget: const SpinKitFadingCube(
+                        color: Colors.brown,
+                        size: 20,
+                      ),
                     );
+
                     if (response == null) {
-                      RecipeController recipeController =
-                          Get.put(RecipeController(), permanent: true);
+
                       await recipeController.getRandomMeal();
                       Get.offUntil(
                         MaterialPageRoute(
@@ -157,17 +164,18 @@ class ProfileImageCircle extends StatelessWidget {
   const ProfileImageCircle({
     super.key,
     required this.isEditable,
+    required this.imagePath,
     this.onPressed,
-    this.imagePath,
+    this.onDeviceFilePath,
   });
 
   final bool isEditable;
   final String? imagePath;
   final VoidCallback? onPressed;
+  final String? onDeviceFilePath;
 
   @override
   Widget build(BuildContext context) {
-    UserController userController = Get.put(UserController());
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -202,23 +210,24 @@ class ProfileImageCircle extends StatelessWidget {
                 ),
               ],
             ),
-            child: Obx(() => ClipOval(
-              child: userController.hasProfilePic()
-                  ? FadeInImage.assetNetwork(
-                    placeholder: 'assets/illustrations/food_bg_1.png',
-                      image: userController.userModel.value.profilePic!,
-                      fit: BoxFit.cover,
-                    )
-                  : imagePath == null
-                      ? SvgPicture.asset(
-                          'assets/illustrations/food_bg_1.svg',
-                        )
-                      : Image.file(
-                          File(imagePath!),
-                          fit: BoxFit.cover,
-                          //TODO: Put the error builder
-                        ),
-            ),),
+            child: Obx(
+              () => ClipOval(
+                  child: FadeInImage(
+                placeholder:
+                    const AssetImage('assets/illustrations/food_bg_1.png'),
+                image:
+                    userController.hasProfilePic() && onDeviceFilePath == null
+                        ? NetworkImage(
+                            imagePath!,
+                          )
+                        : onDeviceFilePath == null
+                            ? AssetImage('assets/illustrations/food_bg_1.png')
+                            : FileImage(
+                                File(onDeviceFilePath!),
+                              ),
+                fit: BoxFit.cover,
+              )),
+            ),
           ),
           isEditable
               ? Positioned(

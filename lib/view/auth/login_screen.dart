@@ -2,12 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
-import 'package:recipe_on_net/controller/auth_controller.dart';
-import 'package:recipe_on_net/controller/recipe_controller.dart';
-import 'package:recipe_on_net/controller/storage_controller.dart';
-import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/constants/enums.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
 import 'package:recipe_on_net/view/auth/forgotten_password_screen.dart';
 import 'package:recipe_on_net/view/auth/registration_screen.dart';
+import 'package:recipe_on_net/view/main_screens/dashboard_page.dart';
 import 'package:recipe_on_net/view/main_screens/main_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
@@ -36,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TapGestureRecognizer onTapRegister = Get.put(
     TapGestureRecognizer()
       ..onTap = () {
-        Get.off(() => const RegistrationScreen());
+        Get.to(() => const RegistrationScreen());
       },
   );
 
@@ -125,7 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
               filled: true,
               label: 'Login',
               onTap: () async {
-                AuthController authController = Get.put(AuthController());
                 if (formKey.currentState?.validate() == true) {
                   final response = await Get.showOverlay(
                     asyncFunction: () => authController.signInUser(
@@ -138,27 +136,38 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   );
                   if (response == null) {
-                    UserController userController =
-                        Get.put(UserController(), permanent: true);
-                    StorageController storageController =
-                        Get.put(StorageController());
                     userController.setUserEmail(emailController.text);
                     final secondResponse = await Get.showOverlay(
-                    asyncFunction: () => storageController
-                        .getUserData(emailController.text),
-                    loadingWidget: const SpinKitFadingCube(
-                      color: Colors.brown,
-                      size: 20,
-                    ));
+                        asyncFunction: () =>
+                            storageController.getUserData(emailController.text),
+                        loadingWidget: const SpinKitFadingCube(
+                          color: Colors.brown,
+                          size: 20,
+                        ));
                     if (secondResponse != null) {
                       userController.userModel.value = secondResponse;
-                      await userController.parseSavedRecipes();
-                      
+                      await Get.showOverlay(
+                          asyncFunction: () =>
+                              userController.parseSavedRecipes(),
+                          loadingWidget: const SpinKitFadingCube(
+                            color: Colors.brown,
+                            size: 20,
+                          ));
                     }
-                    RecipeController recipeController =
-                        Get.put(RecipeController());
-                    await recipeController.getRandomMeal();
-                    Get.to(() => const MainScreen());
+
+                    await Get.showOverlay(
+                        asyncFunction: () => recipeController.getRandomMeal(),
+                        loadingWidget: const SpinKitFadingCube(
+                          color: Colors.brown,
+                          size: 20,
+                        ));
+
+                    Get.offUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const MainScreen(),
+                      ),
+                      (route) => false,
+                    );
                   } else {
                     Get.showSnackbar(
                       CustomSnackBar(
@@ -225,7 +234,45 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 36,
                           width: 36,
                         ),
-                        onPressed: () {},
+                        onPressed: () async {
+                          final response = await Get.showOverlay(
+                            asyncFunction: () =>
+                                authController.signInUserWithGoogle(),
+                            loadingWidget: const SpinKitFadingCube(
+                              color: Colors.brown,
+                              size: 20,
+                            ),
+                          );
+                          if (response.entries.first.key != 'error') {
+                            userController.setUserEmail(response['email']);
+                            userController.setUserName(response['displayName']);
+                            userController.userModel.value.profilePic =
+                                response['photoUrl'];
+                            final googleStoreResponse =
+                                await userController.saveUserDetailsToCloud();
+                            userController.userLoginType =
+                                LoginTypeEnum.email.toString();
+                            if (googleStoreResponse == 'DATA EXIST') {
+                              Get.off(() => const MainScreen());
+                            }
+                            Get.offUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const MainScreen(),
+                              ),
+                              (route) => false,
+                            );
+                          } else {
+                            Get.snackbar(
+                              'Error',
+                              response['error'],
+                              backgroundColor:
+                                  const Color.fromARGB(255, 93, 27, 22),
+                              colorText: Colors.white,
+                              borderColor: Colors.white,
+                              margin: const EdgeInsets.all(20),
+                            );
+                          }
+                        },
                       ),
                     ),
                   ],
@@ -238,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 text: 'Don\'t have an account? ',
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
                 children: [
                   TextSpan(
@@ -280,6 +327,7 @@ class CustomSnackBar extends StatelessWidget {
         backgroundColor: backgroundColor,
         borderColor: Colors.white,
         borderRadius: 12,
+        animationDuration: const Duration(seconds: 3),
         margin: const EdgeInsets.all(20),
         duration: const Duration(seconds: 2),
         isDismissible: true,

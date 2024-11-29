@@ -2,10 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
-import 'package:recipe_on_net/controller/auth_controller.dart';
-import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/constants/enums.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
 import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/auth/profile_setup_screen.dart';
+import 'package:recipe_on_net/view/main_screens/main_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
 import 'package:recipe_on_net/view/widgets/custom_external_auth_button.dart';
@@ -42,8 +43,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   TapGestureRecognizer onTapLogin = Get.put(
     TapGestureRecognizer()
       ..onTap = () {
-        Get.off(() => const LoginScreen());
+        Get.back();
       },
+    tag: 'onTapLogin',
   );
 
   @override
@@ -165,9 +167,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 label: 'Create Account',
                 onTap: () async {
                   if (formKey.currentState?.validate() == true) {
-                    AuthController authController = Get.put(AuthController());
-                    UserController userController =
-                        Get.put(UserController(), permanent: true);
                     userController.setUserEmail(emailController.text);
                     final response = await Get.showOverlay(
                       asyncFunction: () async {
@@ -183,11 +182,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             return null;
                           } else {
                             await authController.deleteUserAccount(
-                              password: passwordController.text,
-                              email: emailController.text,
-                            );
+                                password: passwordController.text,
+                                email: emailController.text,
+                                loginTypeEnum: LoginTypeEnum.email);
                             return 'Error creating user account';
                           }
+                        } else {
+                          return innerResponse;
                         }
                       },
                       loadingWidget: const SpinKitFadingCube(
@@ -196,7 +197,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                     );
                     if (response == null) {
-                      Get.off(() => const ProfileSetupScreen());
+                      // Get.remo(() => const ProfileSetupScreen());
+                      userController.userLoginType =
+                          LoginTypeEnum.email.toString();
+                      Get.offUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const ProfileSetupScreen(),
+                        ),
+                        (route) => false,
+                      );
                     } else {
                       Get.showSnackbar(
                         CustomSnackBar(
@@ -210,73 +219,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   }
                 },
               ),
-              const SizedBox(height: 20),
-              const Row(
-                children: [
-                  Expanded(child: Divider()),
-                  SizedBox(width: 8),
-                  Text(
-                    'OR',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Expanded(child: Divider()),
-                ],
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 600,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: CustomExternalAuthButton(
-                        buttonLabel: 'Continue with Google',
-                        icon: Image.asset(
-                          'assets/icons/google_icon.png',
-                          height: 36,
-                          width: 36,
-                        ),
-                        onPressed: () async {
-                          AuthController authController =
-                              Get.put(AuthController());
-
-                          final response = await Get.showOverlay(
-                            asyncFunction: () =>
-                                authController.signInUserWithGoogle(),
-                            loadingWidget: const SpinKitFadingCube(
-                              color: Colors.brown,
-                              size: 20,
-                            ),
-                          );
-                          if (response == null) {
-                            Get.off(() => const ProfileSetupScreen());
-                          } else {
-                            Get.snackbar(
-                              'Error',
-                              response,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 93, 27, 22),
-                              colorText: Colors.white,
-                              borderColor: Colors.white,
-                              margin: const EdgeInsets.all(20),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 30),
               RichText(
                 text: TextSpan(
                   text: 'Already have an account? ',
                   style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 16,
+                    fontSize: 14,
                   ),
                   children: [
                     TextSpan(
