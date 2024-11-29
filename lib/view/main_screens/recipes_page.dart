@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:recipe_on_net/constants/helpers.dart';
 import 'package:recipe_on_net/controller/recipe_controller.dart';
@@ -16,24 +17,44 @@ class RecipesPage extends StatefulWidget {
 
 class _RecipesPageState extends State<RecipesPage> {
   int resultsCount = 20;
-  int selectedIndex = 0;
   bool isLoading = false;
+
+  List<GlobalKey> categoryRecipeKey = List.generate(
+    categoryEmojiMap.length,
+    (index) => GlobalKey(),
+  );
+
+  ScrollController categoryScrollController = ScrollController();
   RecipeController recipeController = Get.put(RecipeController());
+
+  double getOffset(GlobalKey key) {
+    if (key.currentContext != null) {
+      RenderBox box = key.currentContext!.findRenderObject() as RenderBox;
+      final position = box.localToGlobal(
+        Offset(0, categoryScrollController.offset),
+      );
+      return position.dy;
+    }
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: const Text(
-          'Recipes',
-          style: TextStyle(
+        title: Text(
+          '${categoryEmojiMap.entries.elementAt(recipeController.selectedRecipesIndex.value).key} Recipes',
+          style: const TextStyle(
             fontWeight: FontWeight.w500,
           ),
         ),
       ),
       body: FutureBuilder(
         future: recipeController.getCategoryData(
-          category: categoryEmojiMap.entries.elementAt(selectedIndex).key,
+          category: categoryEmojiMap.entries
+              .elementAt(recipeController.selectedRecipesIndex.value)
+              .key,
         ),
         builder: (context, snapshot) {
           if (snapshot.hasData &&
@@ -42,6 +63,7 @@ class _RecipesPageState extends State<RecipesPage> {
                     .data?[AccessCondition.good]?.entries.first.value!.length ??
                 0;
             return SingleChildScrollView(
+              controller: categoryScrollController,
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,11 +71,11 @@ class _RecipesPageState extends State<RecipesPage> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: List.generate(
-                        categoryEmojiMap.length,
-                        (index) => Padding(
+                      children: List.generate(categoryEmojiMap.length, (index) {
+                        return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: CustomRecipeFilterChip(
+                            widgetKey: categoryRecipeKey[index],
                             label:
                                 categoryEmojiMap.entries.elementAt(index).key,
                             leading: Text(
@@ -64,16 +86,33 @@ class _RecipesPageState extends State<RecipesPage> {
                                     categoryEmojiMap.entries
                                         .elementAt(index)
                                         .key) &&
-                                selectedIndex == index,
+                                recipeController.selectedRecipesIndex.value ==
+                                    index,
                             onTap: () {
                               setState(() {
-                                selectedIndex = index;
+                                recipeController.selectedRecipesIndex.value =
+                                    index;
+                                // categoryScrollController.animateTo(
+                                //   getOffset(categoryRecipeKey[index]),
+                                //   duration: const Duration(milliseconds: 300),
+                                //   curve: Curves.easeIn,
+                                // );
                               });
                             },
-                            selected: selectedIndex == index,
+                            selected:
+                                recipeController.selectedRecipesIndex.value ==
+                                    index,
                           ),
-                        ),
-                      ),
+                        );
+                        // if (recipeController.selectedRecipesIndex.value ==
+                        //     index) {
+                        //   categoryScrollController.animateTo(
+                        //     getOffset(categoryRecipeKey[index]),
+                        //     duration: const Duration(milliseconds: 300),
+                        //     curve: Curves.easeIn,
+                        //   );
+                        // }
+                      }),
                     ),
                   ),
                   Row(
@@ -147,14 +186,31 @@ class _RecipesPageState extends State<RecipesPage> {
           } else if (snapshot.hasData &&
               snapshot.data?.entries.first.key ==
                   AccessCondition.networkError) {
-            return const Center(
-              child: Icon(Icons.error_outline_outlined),
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: MediaQuery.of(context).size.height * 0.15,
+                ),
+                child: AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: SvgPicture.asset(
+                      'assets/illustrations/network_error.svg'),
+                ),
+              ),
             );
           } else if (snapshot.hasError ||
               snapshot.hasData &&
                   snapshot.data?.entries.first.key == AccessCondition.error) {
-            return const Center(
-              child: Icon(Icons.error_outline_outlined),
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: MediaQuery.of(context).size.height * 0.15,
+                ),
+                child: AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: Image.asset('assets/illustrations/emptyCarton.png'),
+                ),
+              ),
             );
           }
           return const SpinKitFadingCube(

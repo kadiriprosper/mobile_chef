@@ -53,9 +53,7 @@ class NetworkModel {
 Future<bool> isNetworkAvailable() async {
   try {
     final response = await InternetAddress.lookup('google.com');
-    return response.isNotEmpty && response[0].rawAddress.isNotEmpty
-        ? true
-        : false;
+    return response.isNotEmpty && response[0].rawAddress.isNotEmpty;
   } catch (_) {
     return false;
   }

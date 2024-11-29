@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:recipe_on_net/controller/message_controller.dart';
-import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart' as controller;
+
 import 'package:recipe_on_net/model/message_model.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -26,8 +26,7 @@ class _ChatScreenState extends State<ChatScreen> {
   File? selectedImage;
   bool chatEmpty = true;
   Widget? chatTitle;
-  MessageController chatController = Get.put(MessageController());
-  UserController userController = Get.put(UserController());
+
   String title = 'AI chat';
 
   TextEditingController messageController = Get.put(
@@ -39,12 +38,13 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     String date = DateTime.now().toString();
     if (widget.chatIndex != null) {
-      messages =
-          userController.userModel.value.savedChats![widget.chatIndex!].chats!;
-      title =
-          userController.userModel.value.savedChats![widget.chatIndex!].title;
+      messages = controller
+          .userController.userModel.value.savedChats![widget.chatIndex!].chats!;
+      title = controller
+          .userController.userModel.value.savedChats![widget.chatIndex!].title;
       chatTitle = Text(title);
-      date = userController.userModel.value.savedChats![widget.chatIndex!].date;
+      date = controller
+          .userController.userModel.value.savedChats![widget.chatIndex!].date;
     }
     chatModel = ChatModel(date: date, title: title);
     super.initState();
@@ -57,18 +57,13 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 3,
         //TODO: Let there be a color animation when the ai is responding
+        titleSpacing: 0,
         shadowColor: Colors.blue,
         title: Row(
           children: [
-            const CircleAvatar(
-              // radius: 30,
-              backgroundColor: Colors.transparent,
-              child: Text(
-                '🤖',
-                style: TextStyle(
-                  fontSize: 13,
-                ),
-              ),
+            Image.asset(
+              'assets/illustrations/chef.png',
+              width: 30,
             ),
             const SizedBox(width: 2),
             Expanded(child: chatTitle ?? const Text('AI chef')),
@@ -286,7 +281,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           selectedImage = null;
                           attachmentPath = null;
                           setState(() {});
-                          final geminiResponse = await chatController.sendChat(
+                          final geminiResponse =
+                              await controller.messageController.sendChat(
                             messages,
                             newMessage,
                           );
@@ -310,7 +306,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             );
                           }
                           chatModel!.chats = messages;
-                          await userController.updateChats(chatModel!);
+                          await controller.userController
+                              .updateChats(chatModel!);
                           setState(() {});
                         }
                       },
@@ -355,37 +352,40 @@ class ImageDialogOverlay extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(0),
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 10,
-            left: 10,
-            child: IconButton.filled(
-              onPressed: () {
-                Get.back();
-              },
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.orange),
-              ),
-              icon: const Icon(
-                Icons.close,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.center,
-            child: AspectRatio(
-              // width: MediaQuery.of(context).size.width,
-              // height: MediaQuery.of(context).size.height / 2,
-              aspectRatio: 5 / 4,
-              child: Image.file(
-                File(imagePath),
-                fit: BoxFit.cover,
+      child: InkWell(
+        onTap: () => Get.back(),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 10,
+              left: 10,
+              child: IconButton.filled(
+                onPressed: () {
+                  Get.back();
+                },
+                style: const ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(Colors.orange),
+                ),
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.black,
+                ),
               ),
             ),
-          ),
-        ],
+            Align(
+              alignment: Alignment.center,
+              child: AspectRatio(
+                // width: MediaQuery.of(context).size.width,
+                // height: MediaQuery.of(context).size.height / 2,
+                aspectRatio: 5 / 4,
+                child: Image.file(
+                  File(imagePath),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

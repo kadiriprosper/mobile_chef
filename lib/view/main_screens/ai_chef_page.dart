@@ -3,7 +3,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
+
 import 'package:recipe_on_net/view/chat_pages/chat_screen.dart';
 
 class AiChefPage extends StatefulWidget {
@@ -15,7 +16,6 @@ class AiChefPage extends StatefulWidget {
 
 class _AiChefPageState extends State<AiChefPage> {
   bool chatEmpty = false;
-  UserController userController = Get.put(UserController());
 
   @override
   Widget build(BuildContext context) {
@@ -119,12 +119,11 @@ class _AiChefPageState extends State<AiChefPage> {
                     ),
                     leading: CircleAvatar(
                       radius: 30,
-                      backgroundColor: Colors.blue.shade100,
-                      child: const Text(
-                        '🤖',
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
+                      backgroundColor: Colors.brown,
+                      child: Image.asset(
+                        'assets/illustrations/chef.png',
+                        width: 40,
+                        color: Colors.white.withOpacity(.8),
                       ),
                     ),
                     titleTextStyle: TextStyle(

@@ -8,18 +8,20 @@ class CustomRecipeFilterChip extends StatelessWidget {
     required this.selected,
     required this.leading,
     required this.onTap,
-    required this.isLoading,
+    required this.isLoading, required this.widgetKey,
   });
 
   final String label;
   final bool selected;
   final Widget leading;
   final bool isLoading;
+  final GlobalKey widgetKey;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      key: widgetKey,
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(

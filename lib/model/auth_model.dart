@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:recipe_on_net/constants/enums.dart';
 import 'package:recipe_on_net/model/custom_firebase_exception.dart';
 import 'package:recipe_on_net/model/network_model.dart';
 
@@ -179,13 +180,17 @@ class AuthModel {
     }
   }
 
-  Future<Map<AccessCondition, dynamic>> userSignOut() async {
+  Future<Map<AccessCondition, dynamic>> userSignOut(
+      LoginTypeEnum loginTypeEnum) async {
     try {
       final networkResponse = await isNetworkAvailable();
       if (networkResponse == false) {
         return {
           AccessCondition.networkError: 'Unable to Connect to the network'
         };
+      }
+      if (loginTypeEnum == LoginTypeEnum.google) {
+        await (await GoogleSignIn().signOut())?.authentication;
       }
       await firebaseAuth.signOut();
       return {AccessCondition.good: null};
@@ -198,6 +203,30 @@ class AuthModel {
       return {AccessCondition.error: errorCase};
     } catch (e) {
       return {AccessCondition.error: 'Error signing user out'};
+    }
+  }
+
+  Future<Map<AccessCondition, dynamic>> googleUserDeleteAccount() async {
+    try {
+      final networkResponse = await isNetworkAvailable();
+      if (networkResponse == true) {
+        final response = await signInWithGoogle();
+        if (response.entries.first.key == AccessCondition.good) {
+          await firebaseAuth.currentUser?.delete();
+          await (await GoogleSignIn().disconnect())?.authentication;
+          return {AccessCondition.good: null};
+        }
+      }
+      return {AccessCondition.networkError: 'No internet Connection'};
+    } on FirebaseAuthException catch (e) {
+      String errorCase = CustomFirebaseException.getFirebaseAuthException(
+        e,
+        "Error Deleting user account",
+      );
+
+      return {AccessCondition.error: errorCase};
+    } catch (e) {
+      return {AccessCondition.error: 'Error deleting user account'};
     }
   }
 

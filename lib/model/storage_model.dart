@@ -6,25 +6,21 @@ import 'package:recipe_on_net/model/network_model.dart';
 
 class StorageModel {
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+  FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
-  static Future<Map<AccessCondition, String?>> storeUserProfilePic({
+  Future<Map<AccessCondition, String?>> storeUserProfilePic({
     required File file,
     required String picName,
   }) async {
-    FirebaseStorage firebaseStorage = FirebaseStorage.instance;
     try {
-      final refUrl = await firebaseStorage
-          .ref('profile-pictures')
-          .child(picName)
-          .putFile(file)
-          .then(
-            (ref) => ref.ref.getDownloadURL(),
-          );
-
-      return {AccessCondition.good: refUrl};
-    }  catch (e) {
+      final refUrl = firebaseStorage.ref('profile-pictures');
+      final downloadUrl = refUrl.child(picName).putData(file.readAsBytesSync());
+      return {
+        AccessCondition.good: await (await downloadUrl).ref.getDownloadURL()
+      };
+    } catch (e) {
       return {AccessCondition.error: 'Error Setting profile pic'};
-    } 
+    }
   }
 
   Future<Map<AccessCondition, String?>> storeData({
@@ -38,9 +34,29 @@ class StorageModel {
           .doc(documentPath)
           .set(data);
       return {AccessCondition.good: null};
-    } on FirebaseException catch (e) {
-      print(e);
-      return {AccessCondition.error: 'Error Setting profile pic'};
+    } on FirebaseException catch (_) {
+      return {AccessCondition.error: 'Error Storing User Data'};
+    }
+  }
+
+  Future<Map<AccessCondition, String?>> checkDataExistence(
+      {required String email,
+      required String collectionPath,
+      required Map<String, dynamic> data}) async {
+    try {
+      final response =
+          await firebaseFirestore.collection(collectionPath).doc(email).get();
+      if (response.data()?.isEmpty != true) {
+        return {AccessCondition.good: 'DATA EXIST'};
+      } else {
+        return await storeData(
+          data: data,
+          collectionPath: collectionPath,
+          documentPath: email,
+        );
+      }
+    } on Exception catch (_) {
+      return {AccessCondition.error: 'Error Getting Data'};
     }
   }
 
@@ -55,30 +71,24 @@ class StorageModel {
           .get();
       return {AccessCondition.good: response.data()};
     } on FirebaseException catch (e) {
-      print(e);
       return {AccessCondition.error: e.code};
     }
   }
 
-  // Future<Map<AccessCondition, dynamic>> userSignUpWithEmail({
-  //   required String email,
-  //   required String password,
-  // }) async {
-  //   try {
-  //     final response = await firebaseAuth.createUserWithEmailAndPassword(
-  //       email: email,
-  //       password: password,
-  //     );
-  //     return {AccessCondition.good: response};
-  //   } on FirebaseAuthException catch (e) {
-  //     String errorCase = CustomFirebaseException.getFirebaseAuthException(
-  //       e,
-  //       "Error creating user account",
-  //     );
-
-  //     return {AccessCondition.error: errorCase};
-  //   } catch (e) {
-  //     return {AccessCondition.error: 'Error Creating Account'};
-  //   }
-  // }
+  Future<Map<AccessCondition, String?>> deleteData(
+      {required String documentPath, required String collectionPath}) async {
+    try {
+      await firebaseFirestore
+          .collection(collectionPath)
+          .doc(documentPath)
+          .delete();
+      await firebaseStorage
+          .ref('profile-pictures')
+          .child(documentPath)
+          .delete();
+      return {AccessCondition.good: null};
+    } on FirebaseException catch (_) {
+      return {AccessCondition.error: 'Error Deleting User Data'};
+    }
+  }
 }

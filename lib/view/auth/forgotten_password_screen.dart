@@ -2,7 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
-import 'package:recipe_on_net/controller/auth_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
+import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_button.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
 
@@ -29,7 +30,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF3E9),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -117,8 +118,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                     CustomAuthButton(
                       onTap: () async {
                         if (formKey.currentState?.validate() == true) {
-                          AuthController authController =
-                              Get.put(AuthController());
                           final response = await Get.showOverlay(
                             asyncFunction: () =>
                                 authController.sendPasswordResetEmail(
@@ -131,15 +130,23 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                           );
                           if (response == null) {
                             //TODO: Go to password & otp entry page
+                            Get.back();
+                            Get.showSnackbar(
+                              const CustomSnackBar(
+                                response:
+                                    'Password Reset Link has been successfully sent',
+                                backgroundColor: Colors.green,
+                                title: 'Success',
+                              ).build(context),
+                            );
                           } else {
-                            Get.snackbar(
-                              'Error',
-                              response,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 93, 27, 22),
-                              colorText: Colors.white,
-                              borderColor: Colors.white,
-                              margin: const EdgeInsets.all(20),
+                            Get.showSnackbar(
+                              CustomSnackBar(
+                                response: response,
+                                backgroundColor:
+                                    const Color.fromARGB(255, 200, 19, 6),
+                                title: 'Error',
+                              ).build(context),
                             );
                           }
                         }
@@ -150,12 +157,12 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 40),
               RichText(
                 text: TextSpan(
                   text: 'Remember password? ',
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: Colors.black,
                   ),
                   children: [

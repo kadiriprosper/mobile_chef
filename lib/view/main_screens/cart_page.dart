@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:recipe_on_net/controller/global_controller.dart';
-import 'package:recipe_on_net/controller/recipe_controller.dart';
-import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
+
 import 'package:recipe_on_net/view/main_screens/widgets/large_recipe_card.dart';
 import 'package:recipe_on_net/view/recipe_details_screen.dart';
 
@@ -15,8 +14,7 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  RecipeController recipeController = Get.put(RecipeController());
-  UserController userController = Get.put(UserController());
+  
 
   @override
   Widget build(BuildContext context) {
@@ -108,8 +106,6 @@ class _CartPageState extends State<CartPage> {
                     const SizedBox(height: 30),
                     MaterialButton(
                       onPressed: () {
-                        GlobalController globalController =
-                            Get.put(GlobalController());
                         globalController.currentIndex.value = 1;
                       },
                       height: 50,

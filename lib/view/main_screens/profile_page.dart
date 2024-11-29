@@ -2,21 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
-import 'package:recipe_on_net/controller/auth_controller.dart';
-import 'package:recipe_on_net/controller/global_controller.dart';
-import 'package:recipe_on_net/controller/user_controller.dart';
+import 'package:recipe_on_net/constants/enums.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
 import 'package:recipe_on_net/model/user_model.dart';
 import 'package:recipe_on_net/view/auth/login_screen.dart';
 import 'package:recipe_on_net/view/auth/profile_setup_screen.dart';
 import 'package:recipe_on_net/view/profile_pages/edit_profile_page.dart';
 import 'package:recipe_on_net/view/widgets/custom_auth_text_form_field.dart';
+import 'package:recipe_on_net/view/widgets/custom_external_auth_button.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
   Widget build(BuildContext context) {
-    UserController userController = Get.put(UserController());
+  
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -32,13 +37,16 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const ProfileImageCircle(
+            ProfileImageCircle(
               isEditable: false,
+              imagePath: userController.hasProfilePic()
+                  ? userController.userModel.value.profilePic!
+                  : 'assets/illustrations/food_bg_1.png',
             ),
             const SizedBox(height: 20),
             Obx(
               () => Text(
-                userController.userModel.value.userName,
+                userController.userModel.value.userName.value,
                 style: const TextStyle(
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
@@ -66,6 +74,7 @@ class ProfilePage extends StatelessWidget {
                       title: 'Success',
                     ).build(context),
                   );
+                  setState(() {});
                 } else if (userController.updateSuccess == false) {
                   Get.showSnackbar(
                     const CustomSnackBar(
@@ -193,12 +202,13 @@ class ProfilePage extends StatelessWidget {
                   enableDrag: true,
                   builder: (context) => CustomBottomSheet(
                     onTap: () async {
-                      AuthController authController = Get.put(AuthController());
-                      final response = await authController.signOutUser();
+                      final response = await authController.signOutUser(
+                          stringToLoginType(userController.userLoginType) ??
+                              LoginTypeEnum.email);
                       if (response == null) {
-                        Get.put(GlobalController()).currentIndex.value = 0;
+                        globalController.clearIndexStack() ;
                         userController.userModel.value = UserModel(
-                          userName: '',
+                          tempUserName: '',
                           email: '',
                         );
                         Get.offUntil(
@@ -246,27 +256,41 @@ class ProfilePage extends StatelessWidget {
                     onTap: () async {
                       await Get.dialog(
                         DestructiveActionAlertDialog(
+                          loginTypeEnum:
+                              stringToLoginType(userController.userLoginType) ??
+                                  LoginTypeEnum.email,
                           onConfirm: (String password) async {
-                            AuthController authController =
-                                Get.put(AuthController());
-                                //TODO: Delete details for the user
+                            
+                            //TODO: Delete details for the user
                             final response = await Get.showOverlay(
-                              asyncFunction: () =>
-                                  authController.deleteUserAccount(
-                                password: password,
-                                email: userController.userModel.value.email,
-                              ),
+                              asyncFunction: () async {
+                                if (stringToLoginType(
+                                        userController.userLoginType) ==
+                                    LoginTypeEnum.email) {
+                                  return await authController.deleteUserAccount(
+                                    password: password,
+                                    email: userController.userModel.value.email,
+                                    loginTypeEnum: LoginTypeEnum.email,
+                                  );
+                                } else {
+                                  return await authController.deleteUserAccount(
+                                    password: password,
+                                    email: userController.userModel.value.email,
+                                    loginTypeEnum: LoginTypeEnum.google,
+                                  );
+                                }
+                              },
                               loadingWidget: const SpinKitFadingCube(
                                 color: Colors.brown,
                                 size: 20,
                               ),
                             );
                             if (response == null) {
-                              Get.put(
-                                GlobalController(),
-                              ).currentIndex.value = 0;
+                              storageController.deleteUserData(
+                                  userController.userModel.value.email);
+                              globalController.clearIndexStack();
                               userController.userModel.value = UserModel(
-                                userName: '',
+                                tempUserName: '',
                                 email: '',
                               );
                               Get.offUntil(
@@ -327,9 +351,11 @@ class DestructiveActionAlertDialog extends StatelessWidget {
   const DestructiveActionAlertDialog({
     super.key,
     required this.onConfirm,
+    required this.loginTypeEnum,
   });
 
   final Function(String password) onConfirm;
+  final LoginTypeEnum loginTypeEnum;
 
   @override
   Widget build(BuildContext context) {
@@ -351,18 +377,31 @@ class DestructiveActionAlertDialog extends StatelessWidget {
               style: TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 40),
-            CustomAuthTextFormField(
-              hintText: 'Password',
-              controller: passwordController,
-              prefixIcon: const Icon(Icons.key_outlined),
-              validator: (value) {
-                if (value != null && value.length >= 8) {
-                  return null;
-                }
-                return 'Invalid password';
-              },
-              textInputType: TextInputType.visiblePassword,
-            ),
+            loginTypeEnum == LoginTypeEnum.google
+                ? CustomExternalAuthButton(
+                    buttonLabel: 'Delete with Google',
+                    color: Colors.white,
+                    icon: Image.asset(
+                      'assets/icons/google_icon.png',
+                      height: 36,
+                      width: 36,
+                    ),
+                    onPressed: () async {
+                      await onConfirm('');
+                    },
+                  )
+                : CustomAuthTextFormField(
+                    hintText: 'Password',
+                    controller: passwordController,
+                    prefixIcon: const Icon(Icons.key_outlined),
+                    validator: (value) {
+                      if (value != null && value.length >= 8) {
+                        return null;
+                      }
+                      return 'Invalid password';
+                    },
+                    textInputType: TextInputType.visiblePassword,
+                  ),
           ],
         ),
       ),
@@ -377,22 +416,24 @@ class DestructiveActionAlertDialog extends StatelessWidget {
           textColor: Colors.black,
           child: const Text('Cancel'),
         ),
-        MaterialButton(
-          onPressed: () async {
-            if (passwordController.text.length >= 8) {
-              await onConfirm(passwordController.text);
-            }
-          },
-          height: 50,
-          color: Colors.red,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              bottomRight: Radius.circular(12),
-            ),
-          ),
-          textColor: Colors.white,
-          child: const Text('Continue'),
-        ),
+        loginTypeEnum == LoginTypeEnum.email
+            ? MaterialButton(
+                onPressed: () async {
+                  if (passwordController.text.length >= 8) {
+                    await onConfirm(passwordController.text);
+                  }
+                },
+                height: 50,
+                color: Colors.red,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(12),
+                  ),
+                ),
+                textColor: Colors.white,
+                child: const Text('Continue'),
+              )
+            : const SizedBox(),
       ],
     );
   }
@@ -489,11 +530,11 @@ class CustomBottomSheet extends StatelessWidget {
 class ProfileCustomButton extends StatelessWidget {
   const ProfileCustomButton({
     super.key,
-    required this.onPressed,
+    this.onPressed,
     required this.label,
   });
 
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final String label;
 
   @override

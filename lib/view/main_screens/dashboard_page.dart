@@ -3,10 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:icons_plus/icons_plus.dart';
-import 'package:recipe_on_net/constants/constants.dart';
 import 'package:recipe_on_net/constants/enums.dart';
 import 'package:recipe_on_net/constants/helpers.dart';
-import 'package:recipe_on_net/controller/recipe_controller.dart';
+import 'package:recipe_on_net/controller/controllers.dart';
 import 'package:recipe_on_net/view/main_screens/widgets/dashboard_section_widget.dart';
 import 'package:recipe_on_net/view/main_screens/widgets/large_recipe_card.dart';
 import 'package:recipe_on_net/view/recipe_details_screen.dart';
@@ -22,7 +21,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  RecipeController recipeController = Get.put(RecipeController());
   bool randomRecipeLoading = false;
 
   @override
@@ -134,37 +132,47 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
               const SizedBox(height: 10),
-              Obx(
-                () => LargeRecipeCard(
-                  recipe: recipeController.randomRecipe?.value,
-                  onTap: () {
-                    recipeController.selectedRecipe =
-                        recipeController.randomRecipe?.value;
-                    if (recipeController.selectedRecipe != null) {
-                      Get.to(
-                        () => RecipeDetailsScreen(
-                          mealId: recipeController.selectedRecipe!.id,
-                        ),
-                      );
-                    }
-                  },
-                ),
+              LargeRecipeCard(
+                recipe: recipeController.randomRecipe?.value,
+                onTap: () {
+                  recipeController.selectedRecipe =
+                      recipeController.randomRecipe?.value;
+                  if (recipeController.selectedRecipe != null) {
+                    Get.to(
+                      () => RecipeDetailsScreen(
+                        mealId: recipeController.selectedRecipe!.id,
+                      ),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 24),
               DashboardSectionWidget(
-                onPressed: () {},
+                onPressed: () {
+                  recipeController.selectedRecipesIndex.value = 0;
+                  globalController.indexStack = [1];
+                  setState(() {});
+                },
                 sectionLabel: 'Beef Lovers',
                 selectedCategory: DashboardSectionCategoryEnum.beef,
               ),
               const SizedBox(height: 24),
               DashboardSectionWidget(
-                onPressed: () {},
+                onPressed: () {
+                  recipeController.selectedRecipesIndex.value = 6;
+                  globalController.indexStack = [1];
+                  setState(() {});
+                },
                 sectionLabel: 'Seafood Geng',
                 selectedCategory: DashboardSectionCategoryEnum.seafood,
               ),
               const SizedBox(height: 24),
               DashboardSectionWidget(
-                onPressed: () {},
+                onPressed: () {
+                  recipeController.selectedRecipesIndex.value = 10;
+                  globalController.indexStack = [1];
+                  setState(() {});
+                },
                 sectionLabel: 'Veggie Only',
                 selectedCategory: DashboardSectionCategoryEnum.vegetarian,
               ),

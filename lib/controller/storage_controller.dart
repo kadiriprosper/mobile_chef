@@ -21,13 +21,12 @@ class StorageController extends GetxController {
   }
 
   Future<String?> storeProfilePic(File file, String email) async {
-    final response = await StorageModel.storeUserProfilePic(
+    final response = await StorageModel().storeUserProfilePic(
       file: file,
       picName: email,
     );
-    
-      return response.entries.first.value;
-    
+
+    return response.entries.first.value;
   }
 
   Future<String?> storeUserData(UserModel userModel) async {
@@ -44,5 +43,24 @@ class StorageController extends GetxController {
     } else {
       return response.entries.first.value;
     }
+  }
+
+  Future<String?> storeUserDataOnGoogle(UserModel userModel) async {
+    final response = await storageModel.checkDataExistence(
+      email: userModel.email,
+      collectionPath: 'users',
+      data: {
+        "last_update": DateTime.now().toString(),
+        ...userModel.userToMap(),
+      },
+    );
+    return response.entries.first.value;
+  }
+
+  Future<void> deleteUserData(String email) async {
+    await storageModel.deleteData(
+      documentPath: 'users',
+      collectionPath: email,
+    );
   }
 }

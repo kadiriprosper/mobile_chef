@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:recipe_on_net/constants/constants.dart';
+import 'package:recipe_on_net/constants/enums.dart';
 import 'package:recipe_on_net/model/auth_model.dart';
 import 'package:recipe_on_net/model/network_model.dart';
 
@@ -21,6 +22,10 @@ class AuthController extends GetxController {
       await storage.write(
         key: emailDB,
         value: email,
+      );
+      await storage.write(
+        key: loginTypeDB,
+        value: LoginTypeEnum.email.toString(),
       );
       return null;
     }
@@ -44,16 +49,26 @@ class AuthController extends GetxController {
     return response.entries.first.value;
   }
 
-  Future<String?> signInUserWithGoogle() async {
+  Future<Map<String, dynamic>> signInUserWithGoogle() async {
     final response = await authModel.signInWithGoogle();
     if (response.entries.first.key == AccessCondition.good) {
+      final cred = (response.entries.first.value as UserCredential).user;
+      final innerResponse = {
+        'email': cred?.email,
+        'displayName': cred?.displayName,
+        'photoUrl': cred?.photoURL,
+      };
       await storage.write(
         key: emailDB,
-        value: (response.entries.first.value as UserCredential).user?.email,
+        value: innerResponse['email'],
       );
-      return null;
+      await storage.write(
+        key: loginTypeDB,
+        value: LoginTypeEnum.google.toString(),
+      );
+      return innerResponse;
     }
-    return response.entries.first.value;
+    return {'error': response.entries.first.value};
   }
 
   Future<String?> sendPasswordResetEmail({required String email}) async {
@@ -95,11 +110,15 @@ class AuthController extends GetxController {
   Future<String?> deleteUserAccount({
     required String password,
     required String email,
+    required LoginTypeEnum loginTypeEnum,
   }) async {
-    final response = await authModel.deleteUserAccount(
-      email: email,
-      password: password,
-    );
+    final response = loginTypeEnum == LoginTypeEnum.email
+        ? await authModel.deleteUserAccount(
+            email: email,
+            password: password,
+          )
+        : await authModel.googleUserDeleteAccount();
+
     if (response.entries.first.key == AccessCondition.good) {
       await storage.delete(
         key: emailDB,
@@ -109,8 +128,8 @@ class AuthController extends GetxController {
     return response.entries.first.value;
   }
 
-  Future<String?> signOutUser() async {
-    final response = await authModel.userSignOut();
+  Future<String?> signOutUser(LoginTypeEnum loginTypeEnum) async {
+    final response = await authModel.userSignOut(loginTypeEnum);
     if (response.entries.first.key == AccessCondition.good) {
       await storage.delete(
         key: emailDB,
