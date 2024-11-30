@@ -27,6 +27,6 @@ To create this application, various resources were utilized.
   -  [Habit Bulder UI](https://www.figma.com/design/HlxR8aFlFNZuM7BDeMm93s/Pixel-True---Habit-Builder-UI-Kit?node-id=702-5164&node-type=canvas&t=9fLLehzifwKWd1vx-0)
   -  [Male chef icons created by shmai - Flaticon](https://www.flaticon.com/free-icons/male-chef)
   -  [Pixelbay Images](https://pixabay.com/vectors/basket-empty-shopping-160441/)
-  -  [Empty icons created by Leremy - Flaticon]("https://www.flaticon.com/free-icons/empty" title="empty icons")
+  -  [Empty icons created by Leremy - Flaticon](https://www.flaticon.com/free-icons/empty)
 
   
