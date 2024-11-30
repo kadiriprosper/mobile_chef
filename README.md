@@ -18,7 +18,7 @@ With the ability to create meals with our chef bot, you can be sure your experim
   -  Makes use of [MealDB](https://themealdb.com/) to provide recipes and its relevant information.
   -  Utilizes Firebase services for authentication (firebase auth), cloud database (cloud-Firestore) and Firebase storage to persist user data on the cloud
 
-[Click here](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobile-chef.apk) to download the sample application.
+[Click here](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/app-release.apk) to download the sample application.
 
 ##  Attributions
 To create this application, various resources were utilized.
