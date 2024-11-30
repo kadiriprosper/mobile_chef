@@ -1,4 +1,4 @@
-![LinkdIn Article Cover](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/MobileChefBG.png)
+![LinkdIn Article Cover](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobchefbg.png)
 # Mobile Chef
 
 Want to whip something quickly or cook something delicious, then we've got you covered.
@@ -9,8 +9,8 @@ With the ability to create meals with our chef bot, you can be sure your experim
 
  ## App features
 ### Screenshots
-![1](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobilechefgp1.png)
-![2](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobilechefgp2.png)
+![1](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobilechefgp1low.png)
+![2](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobilechefgp2low.png)
 
 ### Highlight Features
 
