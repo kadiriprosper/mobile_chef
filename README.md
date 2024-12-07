@@ -1,4 +1,4 @@
-![LinkdIn Article Cover](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/MobileChefBG.png)
+![LinkdIn Article Cover](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobchefbg.png)
 # Mobile Chef
 
 Want to whip something quickly or cook something delicious, then we've got you covered.
@@ -9,8 +9,8 @@ With the ability to create meals with our chef bot, you can be sure your experim
 
  ## App features
 ### Screenshots
-![1](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobilechefgp1.png)
-![2](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobilechefgp2.png)
+![1](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobilechefgp1low.png)
+![2](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobilechefgp2low.png)
 
 ### Highlight Features
 
@@ -18,7 +18,7 @@ With the ability to create meals with our chef bot, you can be sure your experim
   -  Makes use of [MealDB](https://themealdb.com/) to provide recipes and its relevant information.
   -  Utilizes Firebase services for authentication (firebase auth), cloud database (cloud-Firestore) and Firebase storage to persist user data on the cloud
 
-[Click here](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/publish/mobile-chef.apk) to download the sample application.
+[Click here](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/app-release.apk) to download the sample application.
 
 ##  Attributions
 To create this application, various resources were utilized.
