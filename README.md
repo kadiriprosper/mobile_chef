@@ -21,7 +21,7 @@ With the ability to create meals with our chef bot, you can be sure your experim
 [Click here](https://github.com/kadiriprosper/mobile_chef/blob/master/assets/app-release.apk) to download the sample application.
 
 ##  Attributions
-To create this application, various resources were utilized.
+To create this application, various resources were utilized, both privately created ones and public ones.
 
 ### Image Attributions
   -  [Habit Bulder UI](https://www.figma.com/design/HlxR8aFlFNZuM7BDeMm93s/Pixel-True---Habit-Builder-UI-Kit?node-id=702-5164&node-type=canvas&t=9fLLehzifwKWd1vx-0)
